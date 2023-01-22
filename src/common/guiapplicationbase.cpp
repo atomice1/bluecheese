@@ -253,13 +253,13 @@ void GuiApplicationBase::onRequestResignation(Chessboard::Colour requestor)
 
 void GuiApplicationBase::onPromotionRequired()
 {
-    qDebug("GuiApplicationBase::onPromotionRequired(%d, %d)");
+    qDebug("GuiApplicationBase::onPromotionRequired()");
     guiFacade()->showPromotionPopup();
 }
 
 void GuiApplicationBase::onRequestPromotion(Chessboard::Piece piece)
 {
-    qDebug("GuiApplicationBase::onRequestPromotion(%d, %d, %s)",
+    qDebug("GuiApplicationBase::onRequestPromotion(%s)",
            qPrintable(pieceToString(piece)));
     facade()->requestPromotion(piece);
 }
