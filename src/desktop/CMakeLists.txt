@@ -59,7 +59,7 @@ if(WIN32)
     set_target_properties(chessboard-desktop PROPERTIES WIN32_EXECUTABLE TRUE)
 elseif(APPLE)
     set_target_properties(chessboard-desktop PROPERTIES MACOSX_BUNDLE TRUE)
-    #set_target_properties(chessboard-desktop PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist)
+    set_target_properties(chessboard-desktop PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist)
     target_link_options(chessboard-desktop PRIVATE LINKER:-sectcreate,__TEXT,__info_plist,${CMAKE_CURRENT_SOURCE_DIR}/Info.plist)
 endif()
 
