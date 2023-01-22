@@ -62,8 +62,6 @@ ChessUpBoard::ChessUpBoard(const BoardAddress& address, BleConnection *connectio
     });
     m_batteryService = connection->createServiceObject(QBluetoothUuid::ServiceClassUuid::BatteryService, this);
     connect(m_batteryService, &QLowEnergyService::stateChanged, this, &ChessUpBoard::discoveryFinished);
-    connect(m_batteryService, &QLowEnergyService::characteristicRead, this, [this](const QLowEnergyCharacteristic &characteristic, const QByteArray &value) {
-    });
     m_batteryService->discoverDetails(QLowEnergyService::FullDiscovery);
     m_uartService->discoverDetails(QLowEnergyService::FullDiscovery);
 }
@@ -88,8 +86,8 @@ void ChessUpBoard::discoveryFinished()
     uint8_t buf[] = {0x01, 0x00};
     m_uartService->writeDescriptor(m_rxClientCharacteristicConfiguration, QByteArray::fromRawData(reinterpret_cast<const char *>(buf), sizeof(buf)));
     m_batteryService->writeDescriptor(m_batteryClientCharacteristicConfiguration, QByteArray::fromRawData(reinterpret_cast<const char *>(buf), sizeof(buf)));
-    sendInit();
     emit m_connection->connected(this);
+    sendInit();
 }
 
 void ChessUpBoard::readFromBoard(const QByteArray& data)
