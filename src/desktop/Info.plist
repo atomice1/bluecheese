@@ -10,7 +10,7 @@
         <key>CFBundleName</key>
         <string>bluecheese-gui</string>
         <key>CFBundleIdentifier</key>
-        <string>com.atomice.bluecheese-gui/string>
+        <string>com.atomice.bluecheese-gui</string>
         <key>CFBundleExecutable</key>
         <string>bluecheese-gui</string>
 
