@@ -142,7 +142,7 @@ void ChessUpBoard::readFromBoard(const QByteArray& data)
             qApp->processEvents();
         }
         Piece piece = Piece::Queen;
-        switch (data[0]) {
+        switch (data[1]) {
         case 1:
             piece = Piece::Rook;
             break;
@@ -156,7 +156,7 @@ void ChessUpBoard::readFromBoard(const QByteArray& data)
             piece = Piece::Queen;
             break;
         default:
-            Q_ASSERT(data[0] >= 1 && data[0] <= 4);
+            Q_ASSERT(data[1] >= 1 && data[1] <= 4);
             piece = Piece::Queen;
             break;
         }
