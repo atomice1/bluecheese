@@ -50,6 +50,7 @@ void CompositeBoard::setRemoteBoard(Chessboard::RemoteBoard *board)
                 emit boardStateChanged(m_local);
             else if (!legal)
                 emit localOutOfSyncWithRemote();
+            checkGameOver();
         });
         connect(board, &RemoteBoard::remoteBoardState, this, [this](const BoardState& state) {
             if (!m_hasLocalMoves)
@@ -94,8 +95,7 @@ void CompositeBoard::requestMove(int fromRow, int fromCol, int toRow, int toCol)
     }
     if (ok)
         emit boardStateChanged(m_local);
-    if (!m_remote)
-        checkGameOver();
+    checkGameOver();
 }
 
 void CompositeBoard::checkGameOver()
@@ -119,8 +119,7 @@ void CompositeBoard::setBoardState(const Chessboard::BoardState& boardState)
     else
         m_hasLocalMoves = true;
     emit boardStateChanged(m_local);
-    if (!m_remote)
-        checkGameOver();
+    checkGameOver();
 }
 
 void CompositeBoard::requestRemoteBoardState()
@@ -158,8 +157,7 @@ void CompositeBoard::requestPromotion(Piece piece)
         m_hasLocalMoves = true;
     if (ok)
         emit boardStateChanged(m_local);
-    if (!m_remote)
-        checkGameOver();
+    checkGameOver();
 }
 
 void CompositeBoard::requestDraw(Colour requestor)
