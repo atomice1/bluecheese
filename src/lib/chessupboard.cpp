@@ -36,6 +36,7 @@ namespace {
     const uint8_t CMD_PROMOTION       = 0x97;
     const uint8_t CMD_SEND_MOVE       = 0x99;
     const uint8_t CMD_SETTINGS        = 0xb9;
+    const uint8_t RESP_MOVE_OK        = 0x22;
     const uint8_t RESP_PROMOTION_OK   = 0x23;
     const uint8_t RESP_OK             = 0x24;
     const uint8_t RESP_BOARD_STATE    = 0x67;
@@ -104,6 +105,8 @@ void ChessUpBoard::readFromBoard(const QByteArray& data)
         requestRemoteBoardState();
         break;
     case RESP_PROMOTION_OK:
+        break;
+    case RESP_MOVE_OK:
         break;
     case RESP_BOARD_STATE: {
         BoardState boardState = boardStateFromRemote(data);
