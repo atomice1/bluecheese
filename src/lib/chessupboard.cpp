@@ -296,8 +296,8 @@ void ChessUpBoard::requestMove(int fromRow, int fromCol, int toRow, int toCol)
 {
     Q_ASSERT(fromRow >= 0 && fromRow < 8 && toRow >= 0 && toCol < 8);
     uint8_t data[2];
-    data[0] = fromRow + fromCol * 8;
-    data[1] = toRow + toCol * 8;
+    data[0] = fromRow * 8 + fromCol ;
+    data[1] = toRow * 8 + toCol;
     sendCommand(CMD_SEND_MOVE,
                 QByteArray::fromRawData(reinterpret_cast<const char *>(data), sizeof(data)));
 }
