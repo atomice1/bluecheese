@@ -73,8 +73,10 @@ void BoardDiscoveryPrivate::deviceDiscovered(const QBluetoothDeviceInfo& info)
     if (!info.name().isEmpty()) {
         BluetoothBoardAddressPrivate *address_d = new BluetoothBoardAddressPrivate(info);
         BoardAddress address(address_d);
-        m_discoveredBoards.append(address);
-        emit q->boardDiscovered(address);
+        if (!m_discoveredBoards.contains(address)) {
+            m_discoveredBoards.append(address);
+            emit q->boardDiscovered(address);
+        }
     }
 }
 

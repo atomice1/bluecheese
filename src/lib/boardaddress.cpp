@@ -98,7 +98,7 @@ BoardAddress& BoardAddress::operator=(const BoardAddress& other)
     return *this;
 }
 
-bool BoardAddress::operator==(const BoardAddress& other)
+bool BoardAddress::operator==(const BoardAddress& other) const
 {
     Q_D(const BoardAddress);
     if (!isValid()) {
@@ -111,10 +111,9 @@ bool BoardAddress::operator==(const BoardAddress& other)
     }
 }
 
-bool BoardAddress::operator!=(const BoardAddress& other)
+bool BoardAddress::operator!=(const BoardAddress& other) const
 {
-    Q_D(const BoardAddress);
-    return d != other.d_func();
+    return !(*this == other);
 }
 
 BoardAddress BoardAddress::fromString(const QString& s)

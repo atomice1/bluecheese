@@ -55,8 +55,8 @@ public:
     LIBCHESSBOARD_EXPORT bool isValid() const;
     LIBCHESSBOARD_EXPORT static BoardAddress fromByteArray(const QByteArray& array);
     LIBCHESSBOARD_EXPORT BoardAddress& operator=(const BoardAddress& other);
-    LIBCHESSBOARD_EXPORT bool operator==(const BoardAddress& other);
-    LIBCHESSBOARD_EXPORT bool operator!=(const BoardAddress& other);
+    LIBCHESSBOARD_EXPORT bool operator==(const BoardAddress& other) const;
+    LIBCHESSBOARD_EXPORT bool operator!=(const BoardAddress& other) const;
     LIBCHESSBOARD_EXPORT static BoardAddress fromString(const QString& s);
 private:
     BoardAddress(const BoardAddressPrivate *d);
