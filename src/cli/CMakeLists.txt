@@ -48,6 +48,8 @@ target_link_libraries(chessboard-cli
 if (APPLE)
     set_target_properties(chessboard-cli PROPERTIES INSTALL_RPATH "@executable_path/../lib")
     target_link_options(chessboard-cli PRIVATE LINKER:-sectcreate,__TEXT,__info_plist,${CMAKE_CURRENT_SOURCE_DIR}/Info.plist)
+else()
+    set_target_properties(chessboard-cli PROPERTIES INSTALL_RPATH "$ORIGIN/../lib")
 endif()
 
 set_target_properties(chessboard-cli PROPERTIES OUTPUT_NAME bluecheese)

@@ -18,6 +18,7 @@
  */
 
 #include <QBluetoothDeviceDiscoveryAgent>
+#include <QtGlobal>
 #include <QDataStream>
 #include <QIODevice>
 #include <QLowEnergyController>
@@ -107,9 +108,11 @@ void BoardDiscoveryPrivate::errorOccurred(QBluetoothDeviceDiscoveryAgent::Error 
     case QBluetoothDeviceDiscoveryAgent::LocationServiceTurnedOffError:
         error2 = BoardDiscovery::LocationServiceTurnedOffError;
         break;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
     case QBluetoothDeviceDiscoveryAgent::MissingPermissionsError:
         error2 = BoardDiscovery::MissingPermissionsError;
         break;
+#endif
     case QBluetoothDeviceDiscoveryAgent::UnknownError:
     default:
         error2 = BoardDiscovery::UnknownError;

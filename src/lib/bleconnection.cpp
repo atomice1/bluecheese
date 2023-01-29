@@ -20,6 +20,7 @@
 #include <QBluetoothUuid>
 #include <QLatin1String>
 #include <QLowEnergyController>
+#include <QtGlobal>
 
 #include "bleconnection.h"
 #include "chessboard.h"
@@ -109,9 +110,11 @@ void BleConnection::controllerErrorOccurred(QLowEnergyController::Error error)
     case QLowEnergyController::AuthorizationError:
         error2 = ConnectionManager::AuthorizationError;
         break;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
     case QLowEnergyController::MissingPermissionsError:
         error2 = ConnectionManager::MissingPermissionsError;
         break;
+#endif
     case QLowEnergyController::UnknownError:
     default:
         error2 = ConnectionManager::UnknownError;

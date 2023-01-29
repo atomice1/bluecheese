@@ -18,6 +18,7 @@
  */
 
 #include <QBluetoothAddress>
+#include <QBluetoothUuid>
 #include <QDataStream>
 #include <QIODevice>
 

@@ -46,10 +46,20 @@ target_link_libraries(chessboard-common
 
 if(COMMAND qt_add_lupdate)
     qt_add_translations(chessboard-common
-        TS_FILES ${TS_FILES})
+        TS_FILES ${TS_FILES}
+        QM_FILES_OUTPUT_VARIABLE QM_FILES)
+    qt_add_resources(chessboard-common "common_translations"
+        PREFIX "/i18n"
+        BASE "${CMAKE_CURRENT_BINARY_DIR}"
+	FILES ${QM_FILES})
 else()
     qt6_add_translations(chessboard-common
-        TS_FILES ${TS_FILES})
+        TS_FILES ${TS_FILES}
+	QM_FILES_OUTPUT_VARIABLE QM_FILES)
+    qt6_add_resources(chessboard-common "common_translations"
+        PREFIX "/i18n"
+        BASE "${CMAKE_CURRENT_BINARY_DIR}"
+	FILES ${QM_FILES})
 endif()
 
 add_custom_target(chessboard-common-ts SOURCES ${TS_FILES})
