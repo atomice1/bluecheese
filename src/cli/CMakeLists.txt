@@ -52,7 +52,11 @@ endif()
 
 set_target_properties(chessboard-cli PROPERTIES OUTPUT_NAME bluecheese)
 
-install(TARGETS chessboard-cli)
+if(WIN32)
+    install(TARGETS chessboard-cli RUNTIME DESTINATION .)
+else()
+    install(TARGETS chessboard-cli)
+endif()
 
 if(COMMAND qt_add_lupdate)
     qt_add_translations(chessboard-cli

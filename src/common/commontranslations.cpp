@@ -26,6 +26,10 @@ QString colourToString(Chessboard::Colour colour)
         return QCoreApplication::translate("CommonTranslations", "white");
     case Chessboard::Colour::Black:
         return QCoreApplication::translate("CommonTranslations", "black");
+    default:
+        Q_ASSERT(colour == Chessboard::Colour::White ||
+                 colour == Chessboard::Colour::Black);
+        return QString();
     }
 }
 
@@ -36,6 +40,10 @@ QString colourToStringTitle(Chessboard::Colour colour)
         return QCoreApplication::translate("CommonTranslations", "White");
     case Chessboard::Colour::Black:
         return QCoreApplication::translate("CommonTranslations", "Black");
+    default:
+        Q_ASSERT(colour == Chessboard::Colour::White ||
+                 colour == Chessboard::Colour::Black);
+        return QString();
     }
 }
 
@@ -54,6 +62,14 @@ QString pieceToString(Chessboard::Piece piece)
         return QCoreApplication::translate("CommonTranslations", "queen");
     case Chessboard::Piece::King:
         return QCoreApplication::translate("CommonTranslations", "king");
+    default:
+        Q_ASSERT(piece == Chessboard::Piece::Bishop ||
+                 piece == Chessboard::Piece::Pawn ||
+                 piece == Chessboard::Piece::Rook ||
+                 piece == Chessboard::Piece::Knight ||
+                 piece == Chessboard::Piece::Queen ||
+                 piece == Chessboard::Piece::King);
+        return QString();
     }
 }
 
@@ -72,6 +88,14 @@ QString pieceToStringTitle(Chessboard::Piece piece)
         return QCoreApplication::translate("CommonTranslations", "Queen");
     case Chessboard::Piece::King:
         return QCoreApplication::translate("CommonTranslations", "King");
+    default:
+        Q_ASSERT(piece == Chessboard::Piece::Bishop ||
+                 piece == Chessboard::Piece::Pawn ||
+                 piece == Chessboard::Piece::Rook ||
+                 piece == Chessboard::Piece::Knight ||
+                 piece == Chessboard::Piece::Queen ||
+                 piece == Chessboard::Piece::King);
+        return QString();
     }
 }
 
@@ -92,6 +116,14 @@ QString colouredPieceToString(Chessboard::ColouredPiece piece)
             return QCoreApplication::translate("CommonTranslations", "white queen");
         case Chessboard::Piece::King:
             return QCoreApplication::translate("CommonTranslations", "white king");
+        default:
+            Q_ASSERT(piece.piece() == Chessboard::Piece::Bishop ||
+                     piece.piece() == Chessboard::Piece::Pawn ||
+                     piece.piece() == Chessboard::Piece::Rook ||
+                     piece.piece() == Chessboard::Piece::Knight ||
+                     piece.piece() == Chessboard::Piece::Queen ||
+                     piece.piece() == Chessboard::Piece::King);
+            return QString();
         }
     case Chessboard::Colour::Black:
         switch (piece.piece()) {
@@ -107,7 +139,19 @@ QString colouredPieceToString(Chessboard::ColouredPiece piece)
             return QCoreApplication::translate("CommonTranslations", "black queen");
         case Chessboard::Piece::King:
             return QCoreApplication::translate("CommonTranslations", "black king");
+        default:
+            Q_ASSERT(piece.piece() == Chessboard::Piece::Bishop ||
+                     piece.piece() == Chessboard::Piece::Pawn ||
+                     piece.piece() == Chessboard::Piece::Rook ||
+                     piece.piece() == Chessboard::Piece::Knight ||
+                     piece.piece() == Chessboard::Piece::Queen ||
+                     piece.piece() == Chessboard::Piece::King);
+            return QString();
         }
+    default:
+        Q_ASSERT(piece.colour() == Chessboard::Colour::White ||
+                 piece.colour() == Chessboard::Colour::Black);
+        return QString();
     }
 }
 
@@ -128,6 +172,14 @@ QString colouredPieceToStringTitle(Chessboard::ColouredPiece piece)
             return QCoreApplication::translate("CommonTranslations", "White Queen");
         case Chessboard::Piece::King:
             return QCoreApplication::translate("CommonTranslations", "White King");
+        default:
+            Q_ASSERT(piece.piece() == Chessboard::Piece::Bishop ||
+                     piece.piece() == Chessboard::Piece::Pawn ||
+                     piece.piece() == Chessboard::Piece::Rook ||
+                     piece.piece() == Chessboard::Piece::Knight ||
+                     piece.piece() == Chessboard::Piece::Queen ||
+                     piece.piece() == Chessboard::Piece::King);
+            return QString();
         }
     case Chessboard::Colour::Black:
         switch (piece.piece()) {
@@ -143,6 +195,18 @@ QString colouredPieceToStringTitle(Chessboard::ColouredPiece piece)
             return QCoreApplication::translate("CommonTranslations", "Black Queen");
         case Chessboard::Piece::King:
             return QCoreApplication::translate("CommonTranslations", "Black King");
+        default:
+            Q_ASSERT(piece.piece() == Chessboard::Piece::Bishop ||
+                     piece.piece() == Chessboard::Piece::Pawn ||
+                     piece.piece() == Chessboard::Piece::Rook ||
+                     piece.piece() == Chessboard::Piece::Knight ||
+                     piece.piece() == Chessboard::Piece::Queen ||
+                     piece.piece() == Chessboard::Piece::King);
+            return QString();
         }
+    default:
+        Q_ASSERT(piece.colour() == Chessboard::Colour::White ||
+                 piece.colour() == Chessboard::Colour::Black);
+        return QString();
     }
 }

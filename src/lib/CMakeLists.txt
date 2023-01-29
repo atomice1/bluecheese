@@ -47,8 +47,8 @@ target_link_libraries(chessboard PRIVATE
 target_compile_definitions(chessboard PRIVATE LIBCHESSBOARD_LIBRARY)
 
 set_target_properties(chessboard PROPERTIES OUTPUT_NAME bluecheese)
-if (win32)
-    install(TARGETS chessboard LIBRARY DESTINATION .)
+if (WIN32)
+    install(TARGETS chessboard RUNTIME DESTINATION .)
 else()
     install(TARGETS chessboard)
 endif()

@@ -28,6 +28,11 @@ QString connectionStateToString(ConnectionState state)
         return QCoreApplication::translate("ConnectionState", "connecting");
     case ConnectionState::Connected:
         return QCoreApplication::translate("ConnectionState", "connected");
+    default:
+        Q_ASSERT(state == ConnectionState::Disconnected ||
+                 state == ConnectionState::Connecting ||
+                 state == ConnectionState::Connected);
+        return QString();
     }
 }
 
@@ -40,5 +45,10 @@ QString connectionStateToStringTitle(ConnectionState state)
         return QCoreApplication::translate("ConnectionState", "Connecting");
     case ConnectionState::Connected:
         return QCoreApplication::translate("ConnectionState", "Connected");
+    default:
+        Q_ASSERT(state == ConnectionState::Disconnected ||
+                 state == ConnectionState::Connecting ||
+                 state == ConnectionState::Connected);
+        return QString();
     }
 }

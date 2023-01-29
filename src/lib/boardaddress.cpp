@@ -107,6 +107,9 @@ bool BoardAddress::operator==(const BoardAddress& other) const
         switch (other.connectionMethod()) {
         case CONNECTION_BLE:
             return static_cast<const BluetoothBoardAddressPrivate&>(*d) == static_cast<const BluetoothBoardAddressPrivate&>(*other.d_func());
+        default:
+            Q_ASSERT(other.connectionMethod() == CONNECTION_BLE);
+            return false;
         }
     }
 }

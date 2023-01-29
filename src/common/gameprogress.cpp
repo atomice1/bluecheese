@@ -51,6 +51,22 @@ QString GameProgress::toString() const
         case DrawReason::None:
         case DrawReason::MutualAgreement:
             return QCoreApplication::translate("GameProgress", "Draw");
+        default:
+            Q_ASSERT(reason == DrawReason::DeadPosition ||
+                     reason == DrawReason::Stalemate ||
+                     reason == DrawReason::ThreefoldRepetitionRule ||
+                     reason == DrawReason::FiftyMoveRule ||
+                     reason == DrawReason::FivefoldRepetition ||
+                     reason == DrawReason::SeventyFiveMoveRule ||
+                     reason == DrawReason::None ||
+                     reason == DrawReason::MutualAgreement);
+            return QString();
         }
+    default:
+        Q_ASSERT(state == GameProgress::InProgress ||
+                 state == GameProgress::Checkmate ||
+                 state == GameProgress::Resignation ||
+                 state == GameProgress::Draw);
+        return QString();
     }
 }

@@ -66,16 +66,18 @@ endif()
 set(APP_NAME bluecheese-gui)
 set_target_properties(chessboard-desktop PROPERTIES OUTPUT_NAME ${APP_NAME})
 
+# From https://github.com/miurahr/cmake-qt-packaging-example/blob/master/Packaging.cmake (MIT license)
+get_target_property(qmake_executable Qt${QT_VERSION_MAJOR}::qmake IMPORTED_LOCATION)
+get_filename_component(_qt_bin_dir "${qmake_executable}" DIRECTORY)
+
 if(WIN32)
     install(TARGETS chessboard-desktop RUNTIME DESTINATION .)
+    install(TARGETS chessboard LIBRARY DESTINATION .)
+    find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${_qt_bin_dir}")
+    install(CODE "execute_process(COMMAND ${WINDEPLOYQT_EXECUTABLE} ${APP_NAME}.exe -verbose=1 -bluetooth WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX})")
 elseif (APPLE)
     install(TARGETS chessboard-desktop BUNDLE DESTINATION .)
-
-    # From https://github.com/miurahr/cmake-qt-packaging-example/blob/master/Packaging.cmake (MIT license)
-    get_target_property(qmake_executable Qt${QT_VERSION_MAJOR}::qmake IMPORTED_LOCATION)
-    get_filename_component(_qt_bin_dir "${qmake_executable}" DIRECTORY)
     find_program(MACDEPLOYQT_EXECUTABLE macdeployqt HINTS "${_qt_bin_dir}")
-
     set_target_properties(chessboard-desktop PROPERTIES INSTALL_RPATH "@executable_path/../Frameworks")
     install(TARGETS chessboard LIBRARY DESTINATION ${APP_NAME}.app/Contents/Frameworks)
     install(CODE "execute_process(COMMAND ${MACDEPLOYQT_EXECUTABLE} ${APP_NAME}.app -verbose=1 -libpath=${CMAKE_BINARY_DIR}/src/lib WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX})")

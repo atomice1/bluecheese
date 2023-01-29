@@ -44,20 +44,20 @@ enum ConnectionMethod {
     CONNECTION_BLE = 1
 };
 
-class BoardAddress {
+class LIBCHESSBOARD_EXPORT BoardAddress {
 public:
-    LIBCHESSBOARD_EXPORT BoardAddress();
-    LIBCHESSBOARD_EXPORT BoardAddress(const BoardAddress& other);
-    LIBCHESSBOARD_EXPORT ~BoardAddress();
-    LIBCHESSBOARD_EXPORT ConnectionMethod connectionMethod() const;
-    LIBCHESSBOARD_EXPORT QString toString() const;
-    LIBCHESSBOARD_EXPORT QByteArray toByteArray() const;
-    LIBCHESSBOARD_EXPORT bool isValid() const;
-    LIBCHESSBOARD_EXPORT static BoardAddress fromByteArray(const QByteArray& array);
-    LIBCHESSBOARD_EXPORT BoardAddress& operator=(const BoardAddress& other);
-    LIBCHESSBOARD_EXPORT bool operator==(const BoardAddress& other) const;
-    LIBCHESSBOARD_EXPORT bool operator!=(const BoardAddress& other) const;
-    LIBCHESSBOARD_EXPORT static BoardAddress fromString(const QString& s);
+    BoardAddress();
+    BoardAddress(const BoardAddress& other);
+    ~BoardAddress();
+    ConnectionMethod connectionMethod() const;
+    QString toString() const;
+    QByteArray toByteArray() const;
+    bool isValid() const;
+    static BoardAddress fromByteArray(const QByteArray& array);
+    BoardAddress& operator=(const BoardAddress& other);
+    bool operator==(const BoardAddress& other) const;
+    bool operator!=(const BoardAddress& other) const;
+    static BoardAddress fromString(const QString& s);
 private:
     BoardAddress(const BoardAddressPrivate *d);
     inline const BoardAddressPrivate *d_func() const { return d_ptr.get(); }
@@ -66,7 +66,7 @@ friend class BoardDiscoveryPrivate;
 friend class ConnectionFactory;
 };
 
-class BoardDiscovery : public QObject {
+class LIBCHESSBOARD_EXPORT BoardDiscovery : public QObject {
     Q_OBJECT
 public:
     enum Error {
@@ -80,23 +80,23 @@ public:
         MissingPermissionsError,
         UnknownError = 100
     };
-    LIBCHESSBOARD_EXPORT BoardDiscovery(QObject *parent = nullptr);
-    LIBCHESSBOARD_EXPORT virtual ~BoardDiscovery();
-    LIBCHESSBOARD_EXPORT void start();
-    LIBCHESSBOARD_EXPORT void stop();
+    BoardDiscovery(QObject *parent = nullptr);
+    virtual ~BoardDiscovery();
+    void start();
+    void stop();
 signals:
-    LIBCHESSBOARD_EXPORT void boardDiscovered(const BoardAddress& address);
-    LIBCHESSBOARD_EXPORT void boardsDiscovered(const QList<BoardAddress>& address);
-    LIBCHESSBOARD_EXPORT void error(Error error);
-    LIBCHESSBOARD_EXPORT void finished();
-    LIBCHESSBOARD_EXPORT void noBoardsDiscovered();
-    LIBCHESSBOARD_EXPORT void started();
+    void boardDiscovered(const BoardAddress& address);
+    void boardsDiscovered(const QList<BoardAddress>& address);
+    void error(Error error);
+    void finished();
+    void noBoardsDiscovered();
+    void started();
 private:
     Q_DECLARE_PRIVATE(BoardDiscovery)
     QScopedPointer<BoardDiscoveryPrivate> d_ptr;
 };
 
-class ConnectionManager : public QObject {
+class LIBCHESSBOARD_EXPORT ConnectionManager : public QObject {
     Q_OBJECT
 public:
     enum Error {
@@ -120,17 +120,17 @@ public:
         DisconnectDuringCharacteristicDiscovery
     };
 
-    LIBCHESSBOARD_EXPORT ConnectionManager(QObject *parent = nullptr);
-    LIBCHESSBOARD_EXPORT virtual ~ConnectionManager();
+    ConnectionManager(QObject *parent = nullptr);
+    virtual ~ConnectionManager();
 public slots:
-    LIBCHESSBOARD_EXPORT void connectToBoard(const BoardAddress& address, QObject *parent = nullptr);
-    LIBCHESSBOARD_EXPORT void disconnectFromBoard();
+    void connectToBoard(const BoardAddress& address, QObject *parent = nullptr);
+    void disconnectFromBoard();
 signals:
-    LIBCHESSBOARD_EXPORT void connected(RemoteBoard *board);
-    LIBCHESSBOARD_EXPORT void error(Error error);
-    LIBCHESSBOARD_EXPORT void disconnected();
-    LIBCHESSBOARD_EXPORT void connectionFailed();
-    LIBCHESSBOARD_EXPORT void connecting(const BoardAddress& address);
+    void connected(Chessboard::RemoteBoard *board);
+    void error(Chessboard::ConnectionManager::Error error);
+    void disconnected();
+    void connectionFailed();
+    void connecting(const Chessboard::BoardAddress& address);
 private:
     Q_DECLARE_PRIVATE(ConnectionManager);
     QScopedPointer<ConnectionManagerPrivate> d_ptr;
@@ -158,37 +158,37 @@ inline Colour invertColour(Colour colour) {
 
 class ColouredPiece {
 public:
-    LIBCHESSBOARD_EXPORT static const ColouredPiece WhitePawn;
-    LIBCHESSBOARD_EXPORT static const ColouredPiece WhiteRook;
-    LIBCHESSBOARD_EXPORT static const ColouredPiece WhiteKnight;
-    LIBCHESSBOARD_EXPORT static const ColouredPiece WhiteBishop;
-    LIBCHESSBOARD_EXPORT static const ColouredPiece WhiteQueen;
-    LIBCHESSBOARD_EXPORT static const ColouredPiece WhiteKing;
-    LIBCHESSBOARD_EXPORT static const ColouredPiece BlackPawn;
-    LIBCHESSBOARD_EXPORT static const ColouredPiece BlackRook;
-    LIBCHESSBOARD_EXPORT static const ColouredPiece BlackKnight;
-    LIBCHESSBOARD_EXPORT static const ColouredPiece BlackBishop;
-    LIBCHESSBOARD_EXPORT static const ColouredPiece BlackQueen;
-    LIBCHESSBOARD_EXPORT static const ColouredPiece BlackKing;
-    LIBCHESSBOARD_EXPORT static const ColouredPiece None;
+    static const ColouredPiece WhitePawn;
+    static const ColouredPiece WhiteRook;
+    static const ColouredPiece WhiteKnight;
+    static const ColouredPiece WhiteBishop;
+    static const ColouredPiece WhiteQueen;
+    static const ColouredPiece WhiteKing;
+    static const ColouredPiece BlackPawn;
+    static const ColouredPiece BlackRook;
+    static const ColouredPiece BlackKnight;
+    static const ColouredPiece BlackBishop;
+    static const ColouredPiece BlackQueen;
+    static const ColouredPiece BlackKing;
+    static const ColouredPiece None;
 
-    LIBCHESSBOARD_EXPORT constexpr ColouredPiece() : m_value(0) {}
-    LIBCHESSBOARD_EXPORT constexpr ColouredPiece(Colour colour, Piece piece) :
+    constexpr ColouredPiece() : m_value(0) {}
+    constexpr ColouredPiece(Colour colour, Piece piece) :
         m_value(static_cast<uint8_t>(colour) |static_cast<uint8_t>(piece)) {}
-    LIBCHESSBOARD_EXPORT constexpr ColouredPiece(const ColouredPiece& other) :
+    constexpr ColouredPiece(const ColouredPiece& other) :
         m_value(other.m_value) {}
 
-    LIBCHESSBOARD_EXPORT constexpr Colour colour() const { return static_cast<Colour>(m_value & 0x30); }
-    LIBCHESSBOARD_EXPORT constexpr Piece piece() const { return static_cast<Piece>(m_value & 0xf); }
-    LIBCHESSBOARD_EXPORT constexpr bool isValid() const { return m_value != 0; };
-    LIBCHESSBOARD_EXPORT constexpr bool operator==(const ColouredPiece& other) { return m_value == other.m_value; }
-    LIBCHESSBOARD_EXPORT constexpr bool operator!=(const ColouredPiece& other) { return m_value != other.m_value; }
-    LIBCHESSBOARD_EXPORT constexpr operator int() const { return m_value; }
-    LIBCHESSBOARD_EXPORT ColouredPiece& operator=(const ColouredPiece& other) { m_value = other.m_value; return *this; }
+    constexpr Colour colour() const { return static_cast<Colour>(m_value & 0x30); }
+    constexpr Piece piece() const { return static_cast<Piece>(m_value & 0xf); }
+    constexpr bool isValid() const { return m_value != 0; };
+    constexpr bool operator==(const ColouredPiece& other) { return m_value == other.m_value; }
+    constexpr bool operator!=(const ColouredPiece& other) { return m_value != other.m_value; }
+    constexpr operator int() const { return m_value; }
+    ColouredPiece& operator=(const ColouredPiece& other) { m_value = other.m_value; return *this; }
     LIBCHESSBOARD_EXPORT QString toFenString() const;
     LIBCHESSBOARD_EXPORT QString toUnicode() const;
-    static LIBCHESSBOARD_EXPORT ColouredPiece fromFenString(const QString& fen);
-    static LIBCHESSBOARD_EXPORT ColouredPiece fromFenChar(QChar fen);
+    LIBCHESSBOARD_EXPORT static ColouredPiece fromFenString(const QString& fen);
+    LIBCHESSBOARD_EXPORT static ColouredPiece fromFenChar(QChar fen);
 private:
     uint8_t m_value;
 };
@@ -207,21 +207,21 @@ inline constexpr ColouredPiece ColouredPiece::BlackQueen = ColouredPiece(Colour:
 inline constexpr ColouredPiece ColouredPiece::BlackKing = ColouredPiece(Colour::Black, Piece::King);
 inline constexpr ColouredPiece ColouredPiece::None = ColouredPiece();
 
-struct Square {
-    LIBCHESSBOARD_EXPORT Square() : row(-1), col(-1) {}
-    LIBCHESSBOARD_EXPORT Square(int r, int c) : row(r), col(c) {}
-    LIBCHESSBOARD_EXPORT Square(const Square& other) : row(other.row), col(other.col) {}
+struct LIBCHESSBOARD_EXPORT Square {
+    Square() : row(-1), col(-1) {}
+    Square(int r, int c) : row(r), col(c) {}
+    Square(const Square& other) : row(other.row), col(other.col) {}
     int row;
     int col;
-    LIBCHESSBOARD_EXPORT bool isValid() const { return row >= 0 && row < 8 & col >= 0 && col < 8; }
-    LIBCHESSBOARD_EXPORT bool operator==(const Square& other) const { return row == other.row && col == other.col; }
-    LIBCHESSBOARD_EXPORT bool operator!=(const Square& other) const { return row != other.row && col != other.col; }
-    LIBCHESSBOARD_EXPORT Square& operator=(const Square& other) { row = other.row; col = other.col; return *this; }
-    LIBCHESSBOARD_EXPORT bool operator<(const Square& other) const { return row < other.row || row == other.row && col < other.col; }
-    LIBCHESSBOARD_EXPORT bool operator>(const Square& other) const { return row > other.row || row == other.row && col > other.col; }
-    LIBCHESSBOARD_EXPORT QString toString() const;
-    LIBCHESSBOARD_EXPORT QString toAlgebraicString() const;
-    static LIBCHESSBOARD_EXPORT Square fromAlgebraicString(const QString& s);
+    bool isValid() const { return row >= 0 && row < 8 & col >= 0 && col < 8; }
+    bool operator==(const Square& other) const { return row == other.row && col == other.col; }
+    bool operator!=(const Square& other) const { return row != other.row && col != other.col; }
+    Square& operator=(const Square& other) { row = other.row; col = other.col; return *this; }
+    bool operator<(const Square& other) const { return row < other.row || row == other.row && col < other.col; }
+    bool operator>(const Square& other) const { return row > other.row || row == other.row && col > other.col; }
+    QString toString() const;
+    QString toAlgebraicString() const;
+    static Square fromAlgebraicString(const QString& s);
 };
 
 enum class DrawReason {
@@ -235,8 +235,8 @@ enum class DrawReason {
     MutualAgreement
 };
 
-struct BoardState {
-    LIBCHESSBOARD_EXPORT BoardState();
+struct LIBCHESSBOARD_EXPORT BoardState {
+    BoardState();
     ColouredPiece state[8][8];
     Colour activeColour;
     bool whiteKingsideCastlingAvailable;
@@ -246,65 +246,65 @@ struct BoardState {
     Square enpassantTarget;
     int halfMoveClock;
     int fullMoveCount;
-    LIBCHESSBOARD_EXPORT ColouredPiece *operator[](int row) {
+    ColouredPiece *operator[](int row) {
         return reinterpret_cast<ColouredPiece *>(&state[row][0]);
     }
-    LIBCHESSBOARD_EXPORT const ColouredPiece *operator[](int row) const {
+    const ColouredPiece *operator[](int row) const {
         return reinterpret_cast<const ColouredPiece *>(&state[row][0]);
     }
-    LIBCHESSBOARD_EXPORT ColouredPiece& operator[](const Square& square) {
+    ColouredPiece& operator[](const Square& square) {
         return state[square.row][square.col];
     }
-    LIBCHESSBOARD_EXPORT const ColouredPiece& operator[](const Square& square) const {
+    const ColouredPiece& operator[](const Square& square) const {
         return state[square.row][square.col];
     }
-    LIBCHESSBOARD_EXPORT QString toFenString() const;
-    LIBCHESSBOARD_EXPORT QString toString() const;
-    LIBCHESSBOARD_EXPORT bool isValid() const;
-    LIBCHESSBOARD_EXPORT bool move(int fromRow, int fromCol, int toRow, int toCol, bool *promotionRequired = nullptr);
-    LIBCHESSBOARD_EXPORT bool move(const Square& from, const Square& to, bool *promotionRequired = nullptr) {
+    QString toFenString() const;
+    QString toString() const;
+    bool isValid() const;
+    bool move(int fromRow, int fromCol, int toRow, int toCol, bool *promotionRequired = nullptr);
+    bool move(const Square& from, const Square& to, bool *promotionRequired = nullptr) {
         return move(from.row, from.col, to.row, to.col, promotionRequired);
     }
-    LIBCHESSBOARD_EXPORT bool promote(Piece piece);
-    LIBCHESSBOARD_EXPORT bool isLegalMove(int fromRow, int fromCol, int toRow, int toCol) const;
-    LIBCHESSBOARD_EXPORT bool isLegalMove(const Square& from, const Square& to) const {
+    bool promote(Piece piece);
+    bool isLegalMove(int fromRow, int fromCol, int toRow, int toCol) const;
+    bool isLegalMove(const Square& from, const Square& to) const {
         return isLegalMove(from.row, from.col, to.row, to.col);
     }
-    LIBCHESSBOARD_EXPORT bool isCheckmate() const;
-    LIBCHESSBOARD_EXPORT bool isCheck() const;
-    LIBCHESSBOARD_EXPORT bool isAutomaticDraw(DrawReason *reason = nullptr) const;
-    LIBCHESSBOARD_EXPORT bool isClaimableDraw(DrawReason *reason = nullptr) const;
-    LIBCHESSBOARD_EXPORT bool isPromotionRequired() const;
-    static LIBCHESSBOARD_EXPORT BoardState fromFenString(const QString& fen);
-    static LIBCHESSBOARD_EXPORT BoardState newGame();
+    bool isCheckmate() const;
+    bool isCheck() const;
+    bool isAutomaticDraw(DrawReason *reason = nullptr) const;
+    bool isClaimableDraw(DrawReason *reason = nullptr) const;
+    bool isPromotionRequired() const;
+    static BoardState fromFenString(const QString& fen);
+    static BoardState newGame();
 private:
     bool pieceCanMove(int fromRow, int fromCol, int toRow, int toCol) const;
 };
 
-class RemoteBoard : public QObject {
+class LIBCHESSBOARD_EXPORT RemoteBoard : public QObject {
     Q_OBJECT
 public:
     RemoteBoard(const BoardAddress& address, QObject *parent = nullptr);
     virtual ~RemoteBoard();
-    LIBCHESSBOARD_EXPORT BoardAddress address() const;
-    LIBCHESSBOARD_EXPORT virtual void requestRemoteBoardState();
-    LIBCHESSBOARD_EXPORT virtual void requestNewGame();
-    LIBCHESSBOARD_EXPORT virtual void requestMove(int fromRow, int fromCol, int toRow, int toCol);
-    LIBCHESSBOARD_EXPORT void requestMove(const Square& from, const Square& to) {
+    BoardAddress address() const;
+    virtual void requestRemoteBoardState();
+    virtual void requestNewGame();
+    virtual void requestMove(int fromRow, int fromCol, int toRow, int toCol);
+    void requestMove(const Square& from, const Square& to) {
         requestMove(from.row, from.col, to.row, to.col);
     }
-    LIBCHESSBOARD_EXPORT virtual void requestPromotion(Piece piece);
-    LIBCHESSBOARD_EXPORT virtual void requestDraw(Colour requestor);
-    LIBCHESSBOARD_EXPORT virtual void requestResignation(Colour requestor);
-    LIBCHESSBOARD_EXPORT virtual void setBoardState(const BoardState& boardState);
+    virtual void requestPromotion(Piece piece);
+    virtual void requestDraw(Colour requestor);
+    virtual void requestResignation(Colour requestor);
+    virtual void setBoardState(const BoardState& boardState);
 signals:
-    LIBCHESSBOARD_EXPORT void remoteMove(int fromRow, int fromCol, int toRow, int toCol);
-    LIBCHESSBOARD_EXPORT void remotePromotion(Piece piece);
-    LIBCHESSBOARD_EXPORT void remoteBoardState(const BoardState& boardState);
-    LIBCHESSBOARD_EXPORT void remoteDrawRequested(Colour requestor);
-    LIBCHESSBOARD_EXPORT void remoteDraw(DrawReason reason);
-    LIBCHESSBOARD_EXPORT void remoteResignation(Colour colour);
-    LIBCHESSBOARD_EXPORT void remoteCheckmate(Colour winner);
+    void remoteMove(int fromRow, int fromCol, int toRow, int toCol);
+    void remotePromotion(Chessboard::Piece piece);
+    void remoteBoardState(const Chessboard::BoardState& boardState);
+    void remoteDrawRequested(Chessboard::Colour requestor);
+    void remoteDraw(Chessboard::DrawReason reason);
+    void remoteResignation(Chessboard::Colour colour);
+    void remoteCheckmate(Chessboard::Colour winner);
 protected:
     Q_DECLARE_PRIVATE(RemoteBoard);
     QScopedPointer<RemoteBoardPrivate> d_ptr;
