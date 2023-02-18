@@ -68,10 +68,10 @@ private slots:
         board.setRemoteBoard(&remoteBoard);
         QSignalSpy drawRequestedSpy(&board, &CompositeBoard::drawRequested);
         QSignalSpy drawSpy(&board, &CompositeBoard::draw);
-        remoteBoard.remoteDrawRequested(Colour::Black);
+        emit remoteBoard.remoteDrawRequested(Colour::Black);
         QCOMPARE(drawRequestedSpy.count(), 1);
         QCOMPARE(drawSpy.count(), 0);
-        remoteBoard.remoteDrawRequested(Colour::White);
+        emit remoteBoard.remoteDrawRequested(Colour::White);
         QCOMPARE(drawRequestedSpy.count(), 2);
         QCOMPARE(drawSpy.count(), 0);
     }
@@ -85,7 +85,7 @@ private slots:
         board.requestDraw(Colour::Black);
         QCOMPARE(drawRequestedSpy.count(), 0);
         QCOMPARE(drawSpy.count(), 0);
-        remoteBoard.remoteDrawRequested(Colour::White);
+        emit remoteBoard.remoteDrawRequested(Colour::White);
         QCOMPARE(drawRequestedSpy.count(), 1);
         QCOMPARE(drawSpy.count(), 0);
     }
@@ -96,7 +96,7 @@ private slots:
         board.setRemoteBoard(&remoteBoard);
         QSignalSpy drawRequestedSpy(&board, &CompositeBoard::drawRequested);
         QSignalSpy drawSpy(&board, &CompositeBoard::draw);
-        remoteBoard.remoteDrawRequested(Colour::Black);
+        emit remoteBoard.remoteDrawRequested(Colour::Black);
         QCOMPARE(drawRequestedSpy.count(), 1);
         QCOMPARE(drawSpy.count(), 0);
         remoteBoard.requestDraw(Colour::White);

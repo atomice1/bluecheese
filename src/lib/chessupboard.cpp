@@ -55,7 +55,7 @@ ChessUpBoard::ChessUpBoard(const BoardAddress& address, BleConnection *connectio
     m_uartService = connection->createServiceObject(QBluetoothUuid(CHESSUP_SERVICE), this);
     connect(m_uartService, &QLowEnergyService::stateChanged, this, &ChessUpBoard::discoveryFinished);
     connect(m_uartService, &QLowEnergyService::characteristicChanged, this, [this](const QLowEnergyCharacteristic &characteristic, const QByteArray &value) {
-        if (characteristic == m_rxCharacteristic)
+        if (characteristic == m_rxCharacteristic && !m_inAckLoop)
             readFromBoard(value);
     });
     connect(m_uartService, &QLowEnergyService::characteristicWritten, this, [this]() {
@@ -117,11 +117,13 @@ void ChessUpBoard::readFromBoard(const QByteArray& data)
         Q_ASSERT(data.size() == 6);
         QByteArray cmdOk = QByteArray::fromRawData(reinterpret_cast<const char *>(&CMD_OK), 1);
         m_writeAcked = false;
+        m_inAckLoop = true;
         while (!m_writeAcked) {
             m_uartService->writeCharacteristic(m_txCharacteristic, cmdOk, QLowEnergyService::WriteWithResponse);
             QObject().thread()->usleep(25*1000);
             qApp->processEvents();
         }
+        m_inAckLoop = false;
         bool newMove = data != m_previousMove;
         m_previousMove = data;
         if (newMove) {
@@ -137,11 +139,13 @@ void ChessUpBoard::readFromBoard(const QByteArray& data)
         Q_ASSERT(data.size() == 2);
         QByteArray cmdOk = QByteArray::fromRawData(reinterpret_cast<const char *>(&CMD_PROMOTION_OK), 1);
         m_writeAcked = false;
+        m_inAckLoop = true;
         while (!m_writeAcked) {
             m_uartService->writeCharacteristic(m_txCharacteristic, cmdOk, QLowEnergyService::WriteWithResponse);
             QObject().thread()->usleep(25*1000);
             qApp->processEvents();
         }
+        m_inAckLoop = false;
         Piece piece = Piece::Queen;
         switch (data[1]) {
         case 1:

@@ -64,8 +64,10 @@ private:
     QLowEnergyDescriptor m_rxClientCharacteristicConfiguration;
     QLowEnergyDescriptor m_batteryClientCharacteristicConfiguration;
     QByteArray m_previousMove;
-    bool m_writeAcked;
-    bool m_responseRead;
+    bool m_writeAcked {false};
+    bool m_responseRead {false};
+    bool m_sendingMove {false};
+    bool m_inAckLoop {false};
 };
 
 }

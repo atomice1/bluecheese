@@ -38,8 +38,9 @@ void CompositeBoard::setRemoteBoard(Chessboard::RemoteBoard *board)
     }
     auto oldBoard = m_remote;
     m_remote = board;
-    if (oldBoard != board) {
+    if (oldBoard != board)
         delete oldBoard;
+    if (board) {
         board->setParent(this);
         connect(board, &RemoteBoard::remoteMove, this, [this](int fromRow, int fromCol, int toRow, int toCol) {
             bool legal = true;

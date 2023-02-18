@@ -85,9 +85,9 @@ public:
     void start();
     void stop();
 signals:
-    void boardDiscovered(const BoardAddress& address);
-    void boardsDiscovered(const QList<BoardAddress>& address);
-    void error(Error error);
+    void boardDiscovered(const Chessboard::BoardAddress& address);
+    void boardsDiscovered(const QList<Chessboard::BoardAddress>& address);
+    void error(BoardDiscovery::Error error);
     void finished();
     void noBoardsDiscovered();
     void started();
@@ -123,7 +123,7 @@ public:
     ConnectionManager(QObject *parent = nullptr);
     virtual ~ConnectionManager();
 public slots:
-    void connectToBoard(const BoardAddress& address, QObject *parent = nullptr);
+    void connectToBoard(const Chessboard::BoardAddress& address, QObject *parent = nullptr);
     void disconnectFromBoard();
 signals:
     void connected(Chessboard::RemoteBoard *board);

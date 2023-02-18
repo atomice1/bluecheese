@@ -4,11 +4,6 @@
 <context>
     <name>ApplicationBase</name>
     <message>
-        <location filename="../src/common/applicationbase.cpp" line="14"/>
-        <source>foo</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../src/common/applicationbase.cpp" line="74"/>
         <source>Bluetooth powered off / radio disabled</source>
         <translation type="unfinished"></translation>

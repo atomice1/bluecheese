@@ -91,6 +91,7 @@ private:
     Chessboard::ConnectionManager *m_connectionManager {};
     Chessboard::BoardDiscovery *m_boardDiscovery {};
     CompositeBoard *m_board {};
+friend class MockApplicationFacade;
 };
 
 #endif // APPLICATIONBASE_H

@@ -20,6 +20,20 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Test)
 
 enable_testing(true)
 
+add_executable(tst_applicationfacade
+    tst_applicationfacade.cpp
+)
+add_test(NAME applicationfacade COMMAND tst_applicationfacade)
+
+target_link_libraries(tst_applicationfacade
+    PUBLIC
+        Qt${QT_VERSION_MAJOR}::Core
+        Qt${QT_VERSION_MAJOR}::Test
+        chessboard
+    PRIVATE
+        chessboard-common)
+
+
 add_executable(tst_compositeboard
     tst_compositeboard.cpp
 )
