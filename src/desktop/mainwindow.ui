@@ -59,7 +59,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>24</height>
+     <height>17</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -71,6 +71,7 @@
     <addaction name="action_Disconnect"/>
     <addaction name="action_Request_Draw"/>
     <addaction name="action_Resign"/>
+    <addaction name="action_Exit"/>
    </widget>
    <addaction name="menu_File"/>
   </widget>
@@ -98,6 +99,11 @@
   <action name="action_Resign">
    <property name="text">
     <string>&amp;Resign</string>
+   </property>
+  </action>
+  <action name="action_Exit">
+   <property name="text">
+    <string>&amp;Exit</string>
    </property>
   </action>
  </widget>

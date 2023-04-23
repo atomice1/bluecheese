@@ -66,6 +66,8 @@ private slots:
     void on_action_Request_Draw_triggered();
     void on_action_Resign_triggered();
 
+    void on_action_Exit_triggered();
+
 private:
     Ui::MainWindow *ui;
     ChessboardScene *m_scene;

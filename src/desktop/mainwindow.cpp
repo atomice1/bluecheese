@@ -114,3 +114,9 @@ void MainWindow::setGameInProgress(bool flag)
     ui->action_Resign->setEnabled(flag);
     m_scene->setGameInProgress(flag);
 }
+
+void MainWindow::on_action_Exit_triggered()
+{
+    qApp->quit();
+}
+
