@@ -155,10 +155,14 @@ void ChessboardScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
 {
     const int row = 8 - mouseEvent->scenePos().y() / SQUARE_SIZE;
     const int col = mouseEvent->scenePos().x() / SQUARE_SIZE;
-    if (row < 0 || row >= 8 || col < 0 || col >= 8)
+    if (row < 0 || row >= 8 || col < 0 || col >= 8 ||
+            mouseEvent->scenePos().x() < 0 ||
+            mouseEvent->scenePos().y() < 0) {
+        m_from = Square();
+        m_to = Square();
+        updateSquares();
         return;
-    if (!m_gameInProgress)
-        return;
+    }
     Square square(row, col);
     if (mouseEvent->button() == Qt::LeftButton) {
         if (m_board[square].colour() == m_board.activeColour &&
@@ -171,8 +175,7 @@ void ChessboardScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
             m_to = square;
             updateSquares();
         }
-    } else if (mouseEvent->button() == Qt::RightButton &&
-               mouseEvent->buttons().testFlag(Qt::LeftButton)) {
+    } else if (mouseEvent->button() == Qt::RightButton) {
         if (m_to.isValid()) {
             m_to = Square();
             updateSquares();
@@ -185,7 +188,10 @@ void ChessboardScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
 
 void ChessboardScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
 {
-    if (mouseEvent->button() == Qt::LeftButton && m_from.isValid() && m_to.isValid()) {
+    if (mouseEvent->button() == Qt::LeftButton &&
+            m_from.isValid() &&
+            m_to.isValid() &&
+            m_gameInProgress) {
         emit requestMove(m_from.row, m_from.col, m_to.row, m_to.col);
         m_from = Square();
         m_to = Square();
