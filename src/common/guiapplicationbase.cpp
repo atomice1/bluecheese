@@ -56,6 +56,7 @@ GuiApplicationBase::GuiApplicationBase(GuiFacade *guiFacade_, QObject *parent) :
     connect(guiFacade(), &GuiFacade::requestDraw, this, &GuiApplicationBase::onRequestDraw);
     connect(guiFacade(), &GuiFacade::requestResignation, this, &GuiApplicationBase::onRequestResignation);
     connect(guiFacade(), &GuiFacade::requestPromotion, this, &GuiApplicationBase::onRequestPromotion);
+    connect(guiFacade(), &GuiFacade::requestEdit, this, &GuiApplicationBase::onRequestEdit);
     guiFacade()->setConnectionState(ConnectionState::Disconnected);
     guiFacade()->setBoardState(BoardState::newGame());
 }
@@ -262,4 +263,19 @@ void GuiApplicationBase::onRequestPromotion(Chessboard::Piece piece)
     qDebug("GuiApplicationBase::onRequestPromotion(%s)",
            qPrintable(pieceToString(piece)));
     facade()->requestPromotion(piece);
+}
+
+void GuiApplicationBase::onRequestEdit(const Chessboard::BoardState& state)
+{
+    qDebug("GuiApplicationBase::onRequestEdit(...)");
+    IllegalBoardReason reason = IllegalBoardReason::None;
+    bool legal = state.isLegal(&reason);
+    if (!legal) {
+        guiFacade()->setEditMode(true);
+        guiFacade()->showIllegalEditPopup(reason);
+    } else {
+        guiFacade()->setBoardState(state);
+        guiFacade()->setEditMode(false);
+        facade()->setBoardStateFromFen(state.toFenString());
+    }
 }

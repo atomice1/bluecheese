@@ -51,6 +51,8 @@ public slots:
     void showGameOverPopup(const GameProgress& progress) override;
     void setActiveColour(Chessboard::Colour colour) override;
     void showDrawRequestedPopup(Chessboard::Colour requestor) override;
+    void setEditMode(bool enabled) override;
+    void showIllegalEditPopup(Chessboard::IllegalBoardReason reason) override;
 
 private slots:
     void updateStatusMessage();

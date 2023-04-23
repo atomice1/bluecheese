@@ -31,13 +31,17 @@ class ChessboardScene : public QGraphicsScene
     Q_OBJECT
 public:
     explicit ChessboardScene(QObject *parent = nullptr);
+    Chessboard::BoardState boardState() const;
+    Chessboard::Square selectedSquare() const;
 
 signals:
+    void squareSelected(int row, int col);
     void requestMove(int fromRow, int fromCol, int toRow, int toCol);
 
 public slots:
     void setBoardState(const Chessboard::BoardState& newState);
     void setGameInProgress(bool flag);
+    void setEditMode(bool enabled);
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent) override;
@@ -55,6 +59,7 @@ private:
     QFont m_font;
     Chessboard::Square m_from, m_to;
     bool m_gameInProgress { true };
+    bool m_editMode { false };
 };
 
 #endif // CHESSBOARDSCENE_H

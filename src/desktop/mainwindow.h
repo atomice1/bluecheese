@@ -43,6 +43,7 @@ public slots:
     void setBoardState(const Chessboard::BoardState& newState);
     void setStatusMessage(const QString& message);
     void setGameInProgress(bool flag);
+    void setEditMode(bool enabled);
 
 signals:
     void connectRequested();
@@ -52,6 +53,7 @@ signals:
     void requestNewGame();
     void requestDraw();
     void requestResignation();
+    void requestEdit(const Chessboard::BoardState& state);
 
 protected:
     void resizeEvent(QResizeEvent *) override;
@@ -65,10 +67,28 @@ private slots:
     void on_action_New_Game_triggered();
     void on_action_Request_Draw_triggered();
     void on_action_Resign_triggered();
-
     void on_action_Exit_triggered();
+    void on_editToolBar_visibilityChanged(bool visible);
+    void squareSelected();
+    void updateEditToolbarState();
+    void changePiece(Chessboard::ColouredPiece piece);
+    void on_action_White_Pawn_triggered();
+    void on_action_White_Knight_triggered();
+    void on_action_White_Bishop_triggered();
+    void on_action_White_Rook_triggered();
+    void on_action_White_Queen_triggered();
+    void on_action_White_King_triggered();
+    void on_action_Black_Pawn_triggered();
+    void on_action_Black_Knight_triggered();
+    void on_action_Black_Bishop_triggered();
+    void on_action_Black_Rook_triggered();
+    void on_action_Black_Queen_triggered();
+    void on_action_Black_King_triggered();
+    void on_action_Empty_triggered();
 
 private:
+    bool isInEditMode() const;
+
     Ui::MainWindow *ui;
     ChessboardScene *m_scene;
 };

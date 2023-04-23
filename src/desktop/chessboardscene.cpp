@@ -50,6 +50,16 @@ ChessboardScene::ChessboardScene(QObject *parent)
     update();
 }
 
+Chessboard::BoardState ChessboardScene::boardState() const
+{
+    return m_board;
+}
+
+Chessboard::Square ChessboardScene::selectedSquare() const
+{
+    return m_from;
+}
+
 void ChessboardScene::update()
 {
     auto oldItemsBySquare = m_itemsBySquare;
@@ -118,14 +128,16 @@ void ChessboardScene::updateSquares()
             auto mixColour = Qt::transparent;
             if (square == m_from) {
                 mixColour = FROM_COLOUR;
-            } else if (square == m_to) {
-                mixColour = TO_COLOUR;
-            } else if (inCheck && m_board[square] == king) {
-                mixColour = CHECK_COLOUR;
-            } else if (m_from.isValid() &&
-                       !m_to.isValid() &&
-                       m_board.isLegalMove(m_from, square)) {
-                mixColour = LEGAL_COLOUR;
+            } else if (!m_editMode) {
+                if (square == m_to) {
+                    mixColour = TO_COLOUR;
+                } else if (inCheck && m_board[square] == king) {
+                    mixColour = CHECK_COLOUR;
+                } else if (m_from.isValid() &&
+                           !m_to.isValid() &&
+                           m_board.isLegalMove(m_from, square)) {
+                    mixColour = LEGAL_COLOUR;
+                }
             }
             QColor colour;
             if (mixColour == Qt::transparent) {
@@ -145,8 +157,6 @@ void ChessboardScene::updateSquares()
 void ChessboardScene::setBoardState(const Chessboard::BoardState& newState)
 {
     m_board = newState;
-    m_from = Square();
-    m_to = Square();
     update();
     updateSquares();
 }
@@ -161,17 +171,23 @@ void ChessboardScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
         m_from = Square();
         m_to = Square();
         updateSquares();
+        if (m_editMode)
+            emit squareSelected(-1, -1);
         return;
     }
     Square square(row, col);
     if (mouseEvent->button() == Qt::LeftButton) {
-        if (m_board[square].colour() == m_board.activeColour &&
-            isLocalPlayerColour(m_board.activeColour)) {
+        if ((m_board[square].colour() == m_board.activeColour &&
+            isLocalPlayerColour(m_board.activeColour)) ||
+            m_editMode) {
             m_from = square;
             m_to = Square();
             updateSquares();
+            if (m_editMode)
+                emit squareSelected(m_from.row, m_from.col);
         } else if (m_from.isValid() &&
-                   m_board.isLegalMove(m_from, square)) {
+                   m_board.isLegalMove(m_from, square) &&
+                   !m_editMode) {
             m_to = square;
             updateSquares();
         }
@@ -182,6 +198,8 @@ void ChessboardScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
         } else {
             m_from = Square();
             updateSquares();
+            if (m_editMode)
+                emit squareSelected(-1, -1);
         }
     }
 }
@@ -191,7 +209,8 @@ void ChessboardScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
     if (mouseEvent->button() == Qt::LeftButton &&
             m_from.isValid() &&
             m_to.isValid() &&
-            m_gameInProgress) {
+            m_gameInProgress &&
+            !m_editMode) {
         emit requestMove(m_from.row, m_from.col, m_to.row, m_to.col);
         m_from = Square();
         m_to = Square();
@@ -208,9 +227,14 @@ bool ChessboardScene::isLocalPlayerColour(Chessboard::Colour)
 void ChessboardScene::setGameInProgress(bool flag)
 {
     m_gameInProgress = flag;
-    if (!flag) {
-        m_from = Square();
-        m_to = Square();
-        updateSquares();
-    }
+}
+
+void ChessboardScene::setEditMode(bool enabled)
+{
+    m_editMode = enabled;
+    m_from = Square();
+    m_to = Square();
+    updateSquares();
+    if (enabled)
+        emit squareSelected(-1, -1);
 }

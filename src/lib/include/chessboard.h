@@ -235,6 +235,19 @@ enum class DrawReason {
     MutualAgreement
 };
 
+enum class IllegalBoardReason {
+    None,
+    NoWhiteKing,
+    NoBlackKing,
+    MoreThanOneWhiteKing,
+    MoreThanOneBlackKing,
+    TooManyWhitePawns,
+    TooManyBlackPawns,
+    TooManyWhitePieces,
+    TooManyBlackPieces,
+    NonActivePlayerInCheck
+};
+
 struct LIBCHESSBOARD_EXPORT BoardState {
     BoardState();
     ColouredPiece state[8][8];
@@ -275,6 +288,7 @@ struct LIBCHESSBOARD_EXPORT BoardState {
     bool isAutomaticDraw(DrawReason *reason = nullptr) const;
     bool isClaimableDraw(DrawReason *reason = nullptr) const;
     bool isPromotionRequired() const;
+    bool isLegal(IllegalBoardReason *reason) const;
     static BoardState fromFenString(const QString& fen);
     static BoardState newGame();
 private:

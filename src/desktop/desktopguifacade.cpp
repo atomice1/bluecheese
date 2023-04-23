@@ -35,6 +35,7 @@ DesktopGuiFacade::DesktopGuiFacade(QObject *parent)
     connect(m_mainWindow, &MainWindow::sendFenRequested, this, &GuiFacade::sendFenRequested);
     connect(m_mainWindow, &MainWindow::requestMove, this, &GuiFacade::requestMove);
     connect(m_mainWindow, &MainWindow::requestNewGame, this, &GuiFacade::requestNewGame);
+    connect(m_mainWindow, &MainWindow::requestEdit, this, &GuiFacade::requestEdit);
     connect(m_mainWindow, &MainWindow::requestDraw, this, [this](){
         emit requestDraw(m_activeColour);
     });
@@ -220,4 +221,48 @@ void DesktopGuiFacade::showDrawRequestedPopup(Chessboard::Colour requestor)
         emit requestDraw((requestor == Chessboard::Colour::White) ?
                          Chessboard::Colour::Black : Chessboard::Colour::White);
     }
+}
+
+void DesktopGuiFacade::showIllegalEditPopup(Chessboard::IllegalBoardReason reason)
+{
+    QString message;
+    switch (reason) {
+    case Chessboard::IllegalBoardReason::None:
+        message = tr("None");
+        break;
+    case Chessboard::IllegalBoardReason::NoWhiteKing:
+        message = tr("No white king");
+        break;
+    case Chessboard::IllegalBoardReason::NoBlackKing:
+        message = tr("No white king");
+        break;
+    case Chessboard::IllegalBoardReason::MoreThanOneWhiteKing:
+        message = tr("More than one white king");
+        break;
+    case Chessboard::IllegalBoardReason::MoreThanOneBlackKing:
+        message = tr("More than one black king");
+        break;
+    case Chessboard::IllegalBoardReason::TooManyWhitePawns:
+        message = tr("Too many white pawns");
+        break;
+    case Chessboard::IllegalBoardReason::TooManyBlackPawns:
+        message = tr("Too many black pawns");
+        break;
+    case Chessboard::IllegalBoardReason::TooManyWhitePieces:
+        message = tr("Too many white pieces");
+        break;
+    case Chessboard::IllegalBoardReason::TooManyBlackPieces:
+        message = tr("Too many black pieces");
+        break;
+    case Chessboard::IllegalBoardReason::NonActivePlayerInCheck:
+        message = tr("Non-active player in check");
+        break;
+    }
+    QMessageBox::warning(m_mainWindow, tr("Illegal Edit"),
+                         message);
+}
+
+void DesktopGuiFacade::setEditMode(bool enabled)
+{
+    m_mainWindow->setEditMode(enabled);
 }

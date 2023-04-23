@@ -66,6 +66,7 @@ protected slots:
     virtual void onRequestDraw(Chessboard::Colour requestor);
     virtual void onRequestResignation(Chessboard::Colour requestor);
     virtual void onRequestPromotion(Chessboard::Piece piece);
+    virtual void onRequestEdit(const Chessboard::BoardState& state);
 
 private:
     GuiFacade *m_guiFacade {};

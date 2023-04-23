@@ -437,6 +437,14 @@ private slots:
         QVERIFY(state[Square::fromAlgebraicString("h1")] == ColouredPiece(Colour::Black, Piece::Queen));
         QVERIFY(state.activeColour == Colour::White);
     }
+
+    void isLegal()
+    {
+        BoardState state = BoardState::newGame();
+        IllegalBoardReason reason;
+        bool legal = state.isLegal(&reason);
+        QVERIFY(legal);
+    }
 };
 
 QTEST_MAIN(TestBoardState)

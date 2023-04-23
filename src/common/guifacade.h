@@ -46,6 +46,7 @@ signals:
     void requestPromotion(Chessboard::Piece piece);
     void requestDraw(Chessboard::Colour requestor);
     void requestResignation(Chessboard::Colour requestor);
+    void requestEdit(const Chessboard::BoardState& state);
 
 public slots:
     virtual void showConnectingPopup(const QString& address) = 0;
@@ -66,6 +67,8 @@ public slots:
     virtual void showGameOverPopup(const GameProgress& progress) = 0;
     virtual void setActiveColour(Chessboard::Colour colour) = 0;
     virtual void showDrawRequestedPopup(Chessboard::Colour requestor) = 0;
+    virtual void setEditMode(bool enabled) = 0;
+    virtual void showIllegalEditPopup(Chessboard::IllegalBoardReason reason) = 0;
 };
 
 #endif // GUIFACADE_H

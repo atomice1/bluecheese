@@ -410,6 +410,8 @@ bool BoardState::isCheck() const
         }
     }
 done:
+    if (kingRow == -1)
+        return false;
     Q_ASSERT(kingRow != -1 && kingCol != -1);
     // See if any opponent pieces could capture the king.
     BoardState tmp = *this;
@@ -646,6 +648,85 @@ BoardState BoardState::fromFenString(const QString& fen)
         ret.fullMoveCount = 1;
     }
     return ret;
+}
+
+bool BoardState::isLegal(IllegalBoardReason *reason) const
+{
+    bool legal = true;
+    if (reason)
+        *reason = IllegalBoardReason::None;
+    int whiteKings = 0, blackKings = 0;
+    int whitePawns = 0, blackPawns = 0;
+    int whiteOtherPieces = 0, blackOtherPieces = 0;
+    for (int row=0;row<8;++row) {
+        for (int col=0;col<8;++col) {
+            Chessboard::ColouredPiece piece = state[row][col];
+            switch (piece) {
+            case Chessboard::ColouredPiece::WhiteKing:
+                whiteKings++;
+                break;
+            case Chessboard::ColouredPiece::BlackKing:
+                blackKings++;
+                break;
+            case Chessboard::ColouredPiece::WhitePawn:
+                whitePawns++;
+                break;
+            case Chessboard::ColouredPiece::BlackPawn:
+                blackPawns++;
+                break;
+            default:
+                if (piece.isValid() && piece.colour() == Colour::Black)
+                    blackOtherPieces++;
+                else if (piece.isValid() && piece.colour() == Colour::White)
+                    whiteOtherPieces++;
+                break;
+            }
+        }
+    }
+    if (whiteKings == 0) {
+        legal = false;
+        if (reason)
+            *reason = IllegalBoardReason::NoWhiteKing;
+    } else if (whiteKings > 1) {
+        legal = false;
+        if (reason)
+            *reason = IllegalBoardReason::MoreThanOneWhiteKing;
+    } else if (blackKings == 0) {
+        legal = false;
+        if (reason)
+            *reason = IllegalBoardReason::NoBlackKing;
+    } else if (blackKings > 1) {
+        legal = false;
+        if (reason)
+            *reason = IllegalBoardReason::MoreThanOneBlackKing;
+    } else if (whitePawns > 8) {
+        legal = false;
+        if (reason)
+            *reason = IllegalBoardReason::TooManyWhitePawns;
+    } else if (blackPawns > 8) {
+        legal = false;
+        if (reason)
+            *reason = IllegalBoardReason::TooManyBlackPawns;
+    } else if (whitePawns + whiteOtherPieces + whiteKings > 16) {
+        legal = false;
+        if (reason)
+            *reason = IllegalBoardReason::TooManyWhitePieces;
+    } else if (blackPawns + blackOtherPieces + blackKings > 16) {
+        legal = false;
+        if (reason)
+            *reason = IllegalBoardReason::TooManyBlackPieces;
+    }
+    Chessboard::Colour otherColour =
+        (activeColour == Chessboard::Colour::White) ?
+            Chessboard::Colour::Black : Chessboard::Colour::White;
+    Chessboard::BoardState copy = *this;
+    copy.activeColour = otherColour;
+    if (copy.isCheck()) {
+        legal = false;
+        if (reason)
+            *reason = IllegalBoardReason::NonActivePlayerInCheck;
+    }
+    return legal;
 }
 
 }
