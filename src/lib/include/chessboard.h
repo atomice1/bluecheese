@@ -21,6 +21,8 @@
 #define CHESSBOARD_H
 
 #include <QByteArray>
+#include <QIODevice>
+#include <QMap>
 #include <QObject>
 #include <QSharedDataPointer>
 #include <QString>
@@ -361,6 +363,18 @@ signals:
 protected:
     Q_DECLARE_PRIVATE(RemoteBoard);
     QScopedPointer<RemoteBoardPrivate> d_ptr;
+};
+
+struct LIBCHESSBOARD_EXPORT Pgn {
+    QMap<QString, QString> tags;
+    QList<AlgebraicNotation> moves;
+    bool isValid() const { return !moves.isEmpty(); }
+};
+
+class LIBCHESSBOARD_EXPORT PgnParser {
+public:
+    Pgn parse(const QString& s, QString *errorMessage = nullptr);
+    Pgn parse(QIODevice *file, QString *errorMessage = nullptr);
 };
 
 }

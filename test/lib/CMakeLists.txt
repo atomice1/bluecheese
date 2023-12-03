@@ -42,3 +42,15 @@ target_link_libraries(tst_algebraicnotation
         Qt${QT_VERSION_MAJOR}::Core
         Qt${QT_VERSION_MAJOR}::Test
         chessboard)
+
+add_executable(tst_pgn
+    tst_pgn.cpp
+    tst_pgn.cpp
+)
+add_test(NAME pgn COMMAND tst_pgn)
+
+target_link_libraries(tst_pgn
+    PUBLIC
+        Qt${QT_VERSION_MAJOR}::Core
+        Qt${QT_VERSION_MAJOR}::Test
+        chessboard)

@@ -35,6 +35,7 @@ add_library(chessboard SHARED
   discovery.cpp
   remoteboard_p.h
   remoteboard.cpp
+  pgn.cpp
 )
 
 target_include_directories(chessboard PUBLIC include)
