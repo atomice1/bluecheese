@@ -147,6 +147,9 @@ enum class Piece {
     King   = 6
 };
 
+LIBCHESSBOARD_EXPORT Piece pieceFromAlgebraicString(const QString& algebraicNotation);
+LIBCHESSBOARD_EXPORT Piece pieceFromAlgebraicChar(QChar algebraicNotation);
+
 enum class Colour {
     White = 0x10,
     Black = 0x20
@@ -224,6 +227,40 @@ struct LIBCHESSBOARD_EXPORT Square {
     static Square fromAlgebraicString(const QString& s);
 };
 
+enum class Castling {
+    None,
+    KingsideCastling,
+    QueensideCastling
+};
+
+enum class CheckStatus {
+    None,
+    Check,
+    Checkmate
+};
+
+class BoardState;
+struct LIBCHESSBOARD_EXPORT AlgebraicNotation {
+    AlgebraicNotation();
+    int fromRow;
+    int fromCol;
+    int toRow;
+    int toCol;
+    Piece piece;
+    Castling castling;
+    bool promotion;
+    Piece promotionPiece;
+    bool enPassant;
+    bool capture;
+    CheckStatus checkStatus;
+    bool drawOffered;
+    bool isValid() const { return (toRow >= 0 && toRow < 8) || (toCol >= 0 && toCol < 8) &&
+                (fromRow == -1 || (fromRow >= 0 && fromRow < 8)) &&
+                (fromCol == -1 || (fromCol >= 0 && fromCol < 8)); };
+    AlgebraicNotation resolve(const BoardState& state) const;
+    static AlgebraicNotation fromString(const QString& s);
+};
+
 enum class DrawReason {
     None,
     Stalemate,
@@ -278,6 +315,8 @@ struct LIBCHESSBOARD_EXPORT BoardState {
     bool move(const Square& from, const Square& to, bool *promotionRequired = nullptr) {
         return move(from.row, from.col, to.row, to.col, promotionRequired);
     }
+    bool move(const QString& algebraicNotation, bool *promotionRequired = nullptr);
+    bool move(const AlgebraicNotation& algebraicNotation, bool *promotionRequired = nullptr);
     bool promote(Piece piece);
     bool isLegalMove(int fromRow, int fromCol, int toRow, int toCol) const;
     bool isLegalMove(const Square& from, const Square& to) const {

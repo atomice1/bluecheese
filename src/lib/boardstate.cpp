@@ -17,9 +17,57 @@
  * <https://www.gnu.org/licenses/>.
  */
 
+#include <QRegularExpression>
+
 #include "chessboard.h"
 
 namespace Chessboard {
+
+Piece pieceFromAlgebraicChar(QChar c)
+{
+    switch (c.unicode()) {
+    case 'K':
+    case 0x2654:
+    case 0x265a:
+        return Piece::King;
+    case 'Q':
+    case 0x2655:
+    case 0x265b:
+        return Piece::Queen;
+    case 'R':
+    case 0x2656:
+    case 0x265c:
+        return Piece::Rook;
+    case 'B':
+    case 0x2657:
+    case 0x265d:
+        return Piece::Bishop;
+    case 'N':
+    case 0x2658:
+    case 0x265e:
+        return Piece::Knight;
+    case 'P':
+    case 0x2659:
+    case 0x265f:
+    case 'a':
+    case 'b':
+    case 'c':
+    case 'd':
+    case 'e':
+    case 'f':
+    case 'g':
+    case 'h':
+    default:
+        return Piece::Pawn;
+    }
+}
+
+Piece pieceFromAlgebraicString(const QString& algebraicNotation)
+{
+    if (algebraicNotation.length() != 1)
+        return Piece();
+    return pieceFromAlgebraicChar(algebraicNotation.at(0));
+}
 
 QString ColouredPiece::toFenString() const
 {
@@ -341,6 +389,35 @@ bool BoardState::move(int fromRow, int fromCol, int toRow, int toCol, bool *prom
             fullMoveCount++;
     }
     return true;
+}
+
+/**
+ * @brief Move using algebaric notation.
+ * @param algebraicNotation the requested moved
+ * @param promotionRequired [out] @true if the move results in a pawn promotion, else @a false
+ * @return @true if the move is legal, else @a false
+ */
+bool BoardState::move(const AlgebraicNotation& algebraicNotation, bool *promotionRequired)
+{
+    // Make a copy, so we can resolve.
+    if (!algebraicNotation.isValid())
+        return false;
+    AlgebraicNotation resolved = algebraicNotation.resolve(*this);
+    if (!resolved.isValid())
+        return false;
+    return move(resolved.fromRow, resolved.fromCol, resolved.toRow, resolved.toCol, promotionRequired);
+}
+
+
+/**
+ * @brief Move using algebaric notation.
+ * @param algebraicNotation the requested moved
+ * @param promotionRequired [out] @true if the move results in a pawn promotion, else @a false
+ * @return @true if the move is legal, else @a false
+ */
+bool BoardState::move(const QString& algebraicNotation, bool *promotionRequired)
+{
+    return move(AlgebraicNotation::fromString(algebraicNotation), promotionRequired);
 }
 
 /**
@@ -727,6 +804,168 @@ bool BoardState::isLegal(IllegalBoardReason *reason) const
             *reason = IllegalBoardReason::NonActivePlayerInCheck;
     }
     return legal;
+}
+
+Q_GLOBAL_STATIC(QRegularExpression, algebraicNotationRegExp,
+                QLatin1String("^(?<castling>"
+                                "(?<piece>[KQRBN])?"
+                                "((?<capture>[xX:-])?"
+                                 "(?<destFile>[a-h])"
+                                 "(?<destRank>[1-8])?|"
+                                 "(?<capture2>[xX:-])?"
+                                 "(?<destRank2>[1-8])|"
+                                 "(?<sourceFile>[a-h])"
+                                 "(?<sourceRank>[1-8])?"
+                                 "(?<capture3>[xX:-])?"
+                                 "(?<destFile2>[a-h])?"
+                                 "(?<destRank3>[1-8])?|"
+                                 "(?<sourceRank2>[1-8])"
+                                 "(?<capture4>[xX:-])?"
+                                 "(?<destFile3>[a-h])?"
+                                 "(?<destRank4>[1-8])?)"
+                                "(?<ep> ?e.p.)?"
+                                "(?<promotion>[=/]?\\(?[KQRBN]\\)?)?"
+                              "|O-O|O-O-O|0-0|0-0-0)"
+                              "(?<capture5>:)?"
+                              "(?<check>\\+)?"
+                              "(?<checkmate>#|\\+\\+)?"
+                              "(?<draw>\\(=\\))?$"));
+
+AlgebraicNotation::AlgebraicNotation() :
+    fromRow(-1),
+    fromCol(-1),
+    toRow(-1),
+    toCol(-1),
+    piece(Piece::Pawn),
+    castling(Castling::None),
+    promotion(false),
+    promotionPiece(Piece::Pawn),
+    enPassant(false),
+    capture(false),
+    checkStatus(CheckStatus::None),
+    drawOffered(false)
+{}
+
+AlgebraicNotation AlgebraicNotation::fromString(const QString& s)
+{
+    AlgebraicNotation ret;
+    auto match = (*algebraicNotationRegExp).match(s);
+    if (!match.hasMatch())
+        return ret;
+    QString castling = match.captured(QLatin1String("castling"));
+    if (castling == "O-O" || castling == "0-0") {
+        ret.castling = Castling::KingsideCastling;
+        ret.piece = Piece::King;
+        ret.fromCol = 4;
+        ret.toCol = 6;
+    } else if (castling == "O-O-O" || castling == "0-0-0") {
+        ret.castling = Castling::QueensideCastling;
+        ret.piece = Piece::King;
+        ret.fromCol = 4;
+        ret.toCol = 2;
+    } else {
+        QString piece = match.captured(QLatin1String("piece"));
+        if (!piece.isEmpty())
+            ret.piece = pieceFromAlgebraicString(piece);
+        QString sourceFile = match.captured(QLatin1String("sourceFile"));
+        if (sourceFile.isEmpty())
+            sourceFile = match.captured(QLatin1String("sourceFile2"));
+        if (!sourceFile.isEmpty())
+            ret.fromCol = sourceFile.at(0).toLatin1() - 'a';
+        QString sourceRank = match.captured(QLatin1String("sourceRank"));
+        if (sourceRank.isEmpty())
+            sourceRank = match.captured(QLatin1String("sourceRank2"));
+        if (!sourceRank.isEmpty())
+            ret.fromRow = sourceRank.toInt() - 1;
+        QString destFile = match.captured(QLatin1String("destFile"));
+        if (destFile.isEmpty())
+            destFile = match.captured(QLatin1String("destFile2"));
+        if (destFile.isEmpty())
+            destFile = match.captured(QLatin1String("destFile3"));
+        if (!destFile.isEmpty())
+            ret.toCol = destFile.at(0).toLatin1() - 'a';
+        QString destRank = match.captured(QLatin1String("destRank"));
+        if (destRank.isEmpty())
+            destRank = match.captured(QLatin1String("destRank2"));
+        if (destRank.isEmpty())
+            destRank = match.captured(QLatin1String("destRank3"));
+        if (destRank.isEmpty())
+            destRank = match.captured(QLatin1String("destRank4"));
+        if (!destRank.isEmpty())
+            ret.toRow = destRank.toInt() - 1;
+        QString ep = match.captured(QLatin1String("ep"));
+        if (!ep.isEmpty())
+            ret.enPassant = true;
+        QString capture = match.captured(QLatin1String("capture"));
+        if (capture.isEmpty())
+            capture = match.captured(QLatin1String("capture2"));
+        if (capture.isEmpty())
+            capture = match.captured(QLatin1String("capture3"));
+        if (capture.isEmpty())
+            capture = match.captured(QLatin1String("capture4"));
+        if (capture.isEmpty())
+            capture = match.captured(QLatin1String("capture5"));
+        if (!capture.isEmpty())
+            ret.capture = capture != QLatin1String("-");
+        QString promotion = match.captured(QLatin1String("promotion"));
+        if (!promotion.isEmpty()) {
+            ret.promotion = true;
+            ret.promotionPiece = pieceFromAlgebraicString(promotion.at(promotion.length() > 1 ? 1 : 0));
+        }
+        QString check = match.captured(QLatin1String("check"));
+        if (!check.isEmpty())
+            ret.checkStatus = CheckStatus::Check;
+        QString checkmate = match.captured(QLatin1String("checkmate"));
+        if (!checkmate.isEmpty())
+            ret.checkStatus = CheckStatus::Checkmate;
+        QString draw = match.captured(QLatin1String("draw"));
+        if (!draw.isEmpty())
+            ret.drawOffered = true;
+    }
+    return ret;
+}
+
+AlgebraicNotation AlgebraicNotation::resolve(const BoardState& state) const
+{
+    AlgebraicNotation ret;
+    int count = 0;
+    int fromRow1 = -1, fromCol1 = -1, toRow1 = -1, toCol1 = -1;
+    for (int row=(fromRow==-1)?0:fromRow;
+         (fromRow==-1)?(row<8):(row==fromRow);
+         ++row) {
+        for (int col=(fromCol==-1)?0:fromCol;
+             (fromCol==-1)?(col<8):(col==fromCol);
+             ++col) {
+            for (int row2=(toRow==-1)?0:toRow;
+                 (toRow==-1)?(row2<8):(row2==toRow);
+                 ++row2) {
+                for (int col2=(toCol==-1)?0:toCol;
+                     (toCol==-1)?(col2<8):(col2==toCol);
+                     ++col2) {
+                    if (state.isLegalMove(row, col, row2, col2) &&
+                        state[row][col].piece() == piece) {
+                        fromRow1 = row;
+                        fromCol1 = col;
+                        toRow1 = row2;
+                        toCol1 = col2;
+                        ++count;
+                    }
+                }
+            }
+        }
+    }
+    if (count != 1)
+        return ret;
+    ret = *this;
+    ret.fromRow = fromRow1;
+    ret.fromCol = fromCol1;
+    ret.toRow = toRow1;
+    ret.toCol = toCol1;
+    if (state[toRow][toCol] != ColouredPiece::None)
+        ret.capture = true;
+    if (piece == Piece::Pawn && fromCol != toCol)
+        ret.enPassant = true;
+    return ret;
 }
 
 }

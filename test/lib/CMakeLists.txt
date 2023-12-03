@@ -22,10 +22,22 @@ enable_testing(true)
 
 add_executable(tst_boardstate
     tst_boardstate.cpp
+
 )
 add_test(NAME boardstate COMMAND tst_boarstate)
 
 target_link_libraries(tst_boardstate
+    PUBLIC
+        Qt${QT_VERSION_MAJOR}::Core
+        Qt${QT_VERSION_MAJOR}::Test
+        chessboard)
+
+add_executable(tst_algebraicnotation
+    tst_algebraicnotation.cpp
+)
+add_test(NAME algebraicnotation COMMAND tst_algebraicnotation)
+
+target_link_libraries(tst_algebraicnotation
     PUBLIC
         Qt${QT_VERSION_MAJOR}::Core
         Qt${QT_VERSION_MAJOR}::Test

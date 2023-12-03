@@ -444,6 +444,28 @@ private slots:
         IllegalBoardReason reason;
         bool legal = state.isLegal(&reason);
         QVERIFY(legal);
+        state = BoardState();
+        legal = state.isLegal(&reason);
+        QVERIFY(!legal);
+        QVERIFY(reason == IllegalBoardReason::NoBlackKing || reason == IllegalBoardReason::NoWhiteKing);
+    }
+
+    void algebraicNotationMove()
+    {
+        BoardState state = BoardState::newGame();
+        QVERIFY(state.move("f3"));
+        QCOMPARE(state[Square::fromAlgebraicString("f2")], ColouredPiece::None);
+        QCOMPARE(state[Square::fromAlgebraicString("f3")], ColouredPiece::WhitePawn);
+        QVERIFY(state.move("e6"));
+        QCOMPARE(state[Square::fromAlgebraicString("e7")], ColouredPiece::None);
+        QCOMPARE(state[Square::fromAlgebraicString("e6")], ColouredPiece::BlackPawn);
+        QVERIFY(state.move("g4"));
+        QCOMPARE(state[Square::fromAlgebraicString("g2")], ColouredPiece::None);
+        QCOMPARE(state[Square::fromAlgebraicString("g4")], ColouredPiece::WhitePawn);
+        QVERIFY(state.move("Qh4#"));
+        QCOMPARE(state[Square::fromAlgebraicString("d8")], ColouredPiece::None);
+        QCOMPARE(state[Square::fromAlgebraicString("h4")], ColouredPiece::BlackQueen);
+        QVERIFY(state.isCheckmate());
     }
 };
 
