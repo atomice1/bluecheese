@@ -467,6 +467,81 @@ private slots:
         QCOMPARE(state[Square::fromAlgebraicString("h4")], ColouredPiece::BlackQueen);
         QVERIFY(state.isCheckmate());
     }
+
+    void stalemate()
+    {
+        BoardState state = BoardState::fromFenString("k1K5/8/8/8/8/8/8/1Q6 w - - 0 1");
+        QVERIFY(state.move("Qb6"));
+        QVERIFY(!state.isCheckmate());
+        DrawReason reason;
+        QVERIFY(state.isAutomaticDraw(&reason));
+        QCOMPARE(reason, DrawReason::Stalemate);
+    }
+
+    void threeFoldRepetitionRule()
+    {
+        BoardState state = BoardState::newGame();
+        QVERIFY(state.move("Nf3"));
+        QVERIFY(state.move("Nf6"));
+        QVERIFY(state.move("Ng1"));
+        QVERIFY(state.move("Ng8"));
+        QVERIFY(state.move("Nf3"));
+        QVERIFY(state.move("Nf6"));
+        QVERIFY(state.move("Ng1"));
+        QVERIFY(state.move("Ng8"));
+        DrawReason reason;
+        QVERIFY(state.isClaimableDraw(&reason));
+        QCOMPARE(reason, DrawReason::ThreefoldRepetitionRule);
+    }
+
+    void fiveFoldRepetitionRule()
+    {
+        BoardState state = BoardState::newGame();
+        QVERIFY(state.move("Nf3"));
+        QVERIFY(state.move("Nf6"));
+        QVERIFY(state.move("Ng1"));
+        QVERIFY(state.move("Ng8"));
+        QVERIFY(state.move("Nf3"));
+        QVERIFY(state.move("Nf6"));
+        QVERIFY(state.move("Ng1"));
+        QVERIFY(state.move("Ng8"));
+        QVERIFY(state.move("Nf3"));
+        QVERIFY(state.move("Nf6"));
+        QVERIFY(state.move("Ng1"));
+        QVERIFY(state.move("Ng8"));
+        QVERIFY(state.move("Nf3"));
+        QVERIFY(state.move("Nf6"));
+        QVERIFY(state.move("Ng1"));
+        QVERIFY(state.move("Ng8"));
+        DrawReason reason;
+        QVERIFY(state.isAutomaticDraw(&reason));
+        QCOMPARE(reason, DrawReason::FivefoldRepetitionRule);
+    }
+
+    void fiftyMoveRule()
+    {
+        BoardState state = BoardState::fromFenString("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 100 23");
+        DrawReason reason;
+        QVERIFY(state.isClaimableDraw(&reason));
+        QCOMPARE(reason, DrawReason::FiftyMoveRule);
+    }
+
+    void seventyFiveMoveRule()
+    {
+        BoardState state = BoardState::fromFenString("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 149 23");
+        QVERIFY(state.move("Kf8"));
+        DrawReason reason;
+        QVERIFY(state.isAutomaticDraw(&reason));
+        QCOMPARE(reason, DrawReason::SeventyFiveMoveRule);
+    }
+
+    void deadPosition()
+    {
+        BoardState state = BoardState::fromFenString("8/2k5/8/8/8/3K4/8/8 w - - 1 1");
+        DrawReason reason;
+        QVERIFY(state.isAutomaticDraw(&reason));
+        QCOMPARE(reason, DrawReason::DeadPosition);
+    }
 };
 
 QTEST_MAIN(TestBoardState)

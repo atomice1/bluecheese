@@ -312,6 +312,7 @@ bool BoardState::isValid() const
 
 bool BoardState::move(int fromRow, int fromCol, int toRow, int toCol, bool *promotion)
 {
+    history.append(key());
     if (promotion)
         *promotion = false;
     ColouredPiece piece = state[fromRow][fromCol];
@@ -388,6 +389,11 @@ bool BoardState::move(int fromRow, int fromCol, int toRow, int toCol, bool *prom
         if (activeColour == Colour::White)
             fullMoveCount++;
     }
+    AlgebraicNotation an;
+    an.fromRow = fromRow;
+    an.fromCol = fromCol;
+    an.toRow = toRow;
+    an.toCol = toCol;
     return true;
 }
 
@@ -456,6 +462,13 @@ bool BoardState::isLegalMove(int fromRow, int fromCol, int toRow, int toCol) con
 bool BoardState::isCheckmate() const
 {
     // Check there is at least one move that doesn't leave the king in check.
+    if (!isCheck())
+        return false;
+    return !hasLegalMove();
+}
+
+bool BoardState::hasLegalMove() const
+{
     for (int row=0;row<8;++row) {
         for (int col=0;col<8;++col) {
             const ColouredPiece& piece = state[row][col];
@@ -463,13 +476,13 @@ bool BoardState::isCheckmate() const
                 for (int row2=0;row2<8;++row2) {
                     for (int col2=0;col2<8;++col2) {
                         if (isLegalMove(row, col, row2, col2))
-                            return false;
+                            return true;
                     }
                 }
             }
         }
     }
-    return true;
+    return false;
 }
 
 bool BoardState::isCheck() const
@@ -508,17 +521,86 @@ done:
 
 bool BoardState::isAutomaticDraw(DrawReason *reason) const
 {
+    if (!hasLegalMove()) {
+        if (reason)
+            *reason = DrawReason::Stalemate;
+        return true;
+    }
+    if (halfMoveClock == 150) {
+        if (reason)
+            *reason = DrawReason::SeventyFiveMoveRule;
+        return true;
+    }
+    int repetitionCount = 1;
+    QByteArray current = key();
+    for (const QByteArray& ba : history) {
+        if (ba == current)
+            repetitionCount++;
+    }
+    if (repetitionCount == 5) {
+        if (reason)
+            *reason = DrawReason::FivefoldRepetitionRule;
+        return true;
+    }
+    int whiteBishops = 0, blackBishops = 0,
+        whiteKnights = 0, blackKnights = 0,
+        other = 0;
+    bool whiteBishopBlack = false, blackBishopBlack = true;
+    for (int row=0;row<8;++row) {
+        for (int col=0;col<8;++col) {
+            const ColouredPiece& piece = state[row][col];
+            if (piece == ColouredPiece::WhiteBishop) {
+                whiteBishops++;
+                if (((row + col) & 1) == 0)
+                    whiteBishopBlack = true;
+            } else if (piece == ColouredPiece::BlackBishop) {
+                blackBishops++;
+                if (((row + col) & 1) == 0)
+                    blackBishopBlack = true;
+            } else if (piece == ColouredPiece::WhiteKnight) {
+                whiteKnights++;
+            } else if (piece == ColouredPiece::BlackKnight) {
+                blackKnights++;
+            } else if (piece != ColouredPiece::None &&
+                       piece.piece() != Piece::King) {
+                other++;
+            }
+        }
+    }
+    if (other == 0 &&
+        (whiteBishops + blackBishops + whiteKnights + blackKnights == 0 ||
+         (whiteBishops + blackBishops == 1 && whiteKnights + blackKnights == 0) ||
+         (whiteBishops + blackBishops == 0 && whiteKnights + blackKnights == 1) ||
+         (whiteBishops == 1 && blackBishops == 1 && whiteBishopBlack == blackBishopBlack))) {
+        if (reason)
+            *reason = DrawReason::DeadPosition;
+        return true;
+    }
     if (reason)
         *reason = DrawReason::None;
-    // TODO
     return false;
 }
 
 bool BoardState::isClaimableDraw(DrawReason *reason) const
 {
+    if (halfMoveClock == 100) {
+        if (reason)
+            *reason = DrawReason::FiftyMoveRule;
+        return true;
+    }
+    int repetitionCount = 1;
+    QByteArray current = key();
+    for (const QByteArray& ba : history) {
+        if (ba == current)
+            repetitionCount++;
+    }
+    if (repetitionCount == 3) {
+        if (reason)
+            *reason = DrawReason::ThreefoldRepetitionRule;
+        return true;
+    }
     if (reason)
         *reason = DrawReason::None;
-    // TODO
     return false;
 }
 
@@ -804,6 +886,24 @@ bool BoardState::isLegal(IllegalBoardReason *reason) const
             *reason = IllegalBoardReason::NonActivePlayerInCheck;
     }
     return legal;
+}
+
+QByteArray BoardState::key() const
+{
+    QByteArray ret;
+    ret.reserve(64);
+    for (int row=7;row>=0;--row) {
+        for (int col=0;col<8;++col) {
+            ret.append(static_cast<char>(static_cast<int>(state[row][col])));
+        }
+    }
+    ret.append(static_cast<char>(((activeColour == Colour::Black) ? 1 : 0) |
+                                  (whiteKingsideCastlingAvailable ? 2 : 0) |
+                                  (blackKingsideCastlingAvailable ? 4 : 0) |
+                                  (whiteQueensideCastlingAvailable ? 8 : 0) |
+                                  (blackQueensideCastlingAvailable ? 16 : 0)));
+    ret.append(static_cast<char>(enpassantTarget.row << 3 | enpassantTarget.col));
+    return ret;
 }
 
 Q_GLOBAL_STATIC(QRegularExpression, algebraicNotationRegExp,

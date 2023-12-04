@@ -24,6 +24,7 @@
 #include <QIODevice>
 #include <QMap>
 #include <QObject>
+#include <QQueue>
 #include <QSharedDataPointer>
 #include <QString>
 
@@ -268,7 +269,7 @@ enum class DrawReason {
     Stalemate,
     ThreefoldRepetitionRule,
     FiftyMoveRule,
-    FivefoldRepetition,
+    FivefoldRepetitionRule,
     SeventyFiveMoveRule,
     DeadPosition,
     MutualAgreement
@@ -298,6 +299,7 @@ struct LIBCHESSBOARD_EXPORT BoardState {
     Square enpassantTarget;
     int halfMoveClock;
     int fullMoveCount;
+    QQueue<QByteArray> history;
     ColouredPiece *operator[](int row) {
         return reinterpret_cast<ColouredPiece *>(&state[row][0]);
     }
@@ -324,12 +326,14 @@ struct LIBCHESSBOARD_EXPORT BoardState {
     bool isLegalMove(const Square& from, const Square& to) const {
         return isLegalMove(from.row, from.col, to.row, to.col);
     }
+    bool hasLegalMove() const;
     bool isCheckmate() const;
     bool isCheck() const;
     bool isAutomaticDraw(DrawReason *reason = nullptr) const;
     bool isClaimableDraw(DrawReason *reason = nullptr) const;
     bool isPromotionRequired() const;
     bool isLegal(IllegalBoardReason *reason) const;
+    QByteArray key() const;
     static BoardState fromFenString(const QString& fen);
     static BoardState newGame();
 private:

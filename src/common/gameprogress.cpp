@@ -44,8 +44,8 @@ QString GameProgress::toString() const
             return QCoreApplication::translate("GameProgress", "Draw -- Threefold Reptition Rule");
         case DrawReason::FiftyMoveRule:
             return QCoreApplication::translate("GameProgress", "Draw -- 50 Move Rule");
-        case DrawReason::FivefoldRepetition:
-            return QCoreApplication::translate("GameProgress", "Draw -- Fivefold Reptition");
+        case DrawReason::FivefoldRepetitionRule:
+            return QCoreApplication::translate("GameProgress", "Draw -- Fivefold Reptition Rule");
         case DrawReason::SeventyFiveMoveRule:
             return QCoreApplication::translate("GameProgress", "Draw -- 75 Move Rule");
         case DrawReason::None:
@@ -56,7 +56,7 @@ QString GameProgress::toString() const
                      reason == DrawReason::Stalemate ||
                      reason == DrawReason::ThreefoldRepetitionRule ||
                      reason == DrawReason::FiftyMoveRule ||
-                     reason == DrawReason::FivefoldRepetition ||
+                     reason == DrawReason::FivefoldRepetitionRule ||
                      reason == DrawReason::SeventyFiveMoveRule ||
                      reason == DrawReason::None ||
                      reason == DrawReason::MutualAgreement);
