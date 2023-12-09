@@ -18,13 +18,13 @@
 
 #include <QCoreApplication>
 #include "applicationfacade.h"
+#include "clioptions.h"
 #include "sendfenapplication.h"
 
 using namespace Chessboard;
 
-SendFenApplication::SendFenApplication(const QString& address, const QString& fen, QObject *parent)
-    : ConnectedCliApplicationBase{address, parent},
-      m_fen(BoardState::fromFenString(fen))
+SendFenApplication::SendFenApplication(const CliOptions *options, QObject *parent)
+    : ConnectedCliApplicationBase{options, parent}
 {
     connect(facade(), &ApplicationFacade::connected, this, &SendFenApplication::onConnected);
     connect(facade(), &ApplicationFacade::remoteBoardState, this, &SendFenApplication::onRemoteBoardState);
@@ -32,7 +32,7 @@ SendFenApplication::SendFenApplication(const QString& address, const QString& fe
 
 void SendFenApplication::onConnected(RemoteBoard *board)
 {
-    board->setBoardState(m_fen);
+    board->setBoardState(options<CliOptions>()->fenToSend);
 }
 
 void SendFenApplication::onRemoteBoardState(const BoardState& newState)

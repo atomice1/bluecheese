@@ -23,6 +23,7 @@ add_executable(chessboard-cli
   cliapplicationbase.h
   cliapplicationfactory.cpp
   cliapplicationfactory.h
+  clioptions.h
   connectedcliapplicationbase.cpp
   connectedcliapplicationbase.h
   discoverapplication.cpp

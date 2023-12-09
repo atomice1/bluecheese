@@ -24,6 +24,7 @@
 #include <QString>
 
 class ApplicationBase;
+class Options;
 class QCommandLineParser;
 
 class ApplicationFactoryBase
@@ -33,14 +34,16 @@ public:
                            const QString& translationName = QString());
     virtual QCommandLineParser *createCommandLineParser();
     virtual void addCommandLineOptions(QCommandLineParser *parser);
-    virtual ApplicationBase *create(QCommandLineParser *parser) = 0;
-    virtual bool validateArguments(QCommandLineParser *parser, QString *errorMessage);
+    virtual ApplicationBase *create(const Options *options) = 0;
+    virtual Options *createOptions();
+    virtual bool processOptions(QCommandLineParser *parser, Options *options, QString *errorMessage);
     const QString applicationName() const { return m_applicationName; }
     const QString translationName() const { return m_translationName; }
 private:
     void addCommonCommandLineOptions(QCommandLineParser *parser);
     QString m_applicationName;
     QString m_translationName;
+    QCommandLineOption m_enableFeatureAi;
 };
 
 int common_main(ApplicationFactoryBase *factory);

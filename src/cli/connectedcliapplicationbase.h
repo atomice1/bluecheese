@@ -24,7 +24,7 @@
 class ConnectedCliApplicationBase : public CliApplicationBase
 {
 public:
-    explicit ConnectedCliApplicationBase(const QString& address, QObject *parent = nullptr);
+    explicit ConnectedCliApplicationBase(const CliOptions *options, QObject *parent = nullptr);
 };
 
 #endif // CONNECTEDCLIAPPLICATIONBASE_H

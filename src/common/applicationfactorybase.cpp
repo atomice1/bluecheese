@@ -27,6 +27,7 @@
 
 #include "applicationbase.h"
 #include "applicationfactorybase.h"
+#include "options.h"
 #include "version.h"
 
 namespace {
@@ -36,8 +37,11 @@ namespace {
 ApplicationFactoryBase::ApplicationFactoryBase(const QString& applicationName,
                                                const QString& translationName) :
     m_applicationName(applicationName),
-    m_translationName(!translationName.isNull() ? translationName : applicationName)
+    m_translationName(!translationName.isNull() ? translationName : applicationName),
+    m_enableFeatureAi(QLatin1String("enable-feature-ai"),
+                      qApp->tr("Enable development feature: AI."))
 {
+    m_enableFeatureAi.setFlags(QCommandLineOption::HiddenFromHelp);
 }
 
 QCommandLineParser *ApplicationFactoryBase::createCommandLineParser()
@@ -56,10 +60,18 @@ void ApplicationFactoryBase::addCommandLineOptions(QCommandLineParser *parser)
 
 void ApplicationFactoryBase::addCommonCommandLineOptions(QCommandLineParser *parser)
 {
+    parser->addOption(m_enableFeatureAi);
 }
 
-bool ApplicationFactoryBase::validateArguments(QCommandLineParser *, QString *)
+Options *ApplicationFactoryBase::createOptions()
 {
+    return new Options();
+}
+
+bool ApplicationFactoryBase::processOptions(QCommandLineParser *parser, Options *options, QString *)
+{
+    if (parser->isSet(m_enableFeatureAi))
+        options->featureAiEnabled = true;
     return true;
 }
 
@@ -84,13 +96,14 @@ int common_main(ApplicationFactoryBase *factory)
 
     QScopedPointer<QCommandLineParser> parser(factory->createCommandLineParser());
     parser->process(qApp->arguments());
+    QScopedPointer<Options> options(factory->createOptions());
     QString errorMessage;
-    bool success = factory->validateArguments(parser.get(), &errorMessage);
+    bool success = factory->processOptions(parser.get(), options.get(), &errorMessage);
     if (!success) {
         QTextStream ts(stderr, QIODevice::WriteOnly);
         ts << errorMessage << "\n";
         return 1;
     }
-    QScopedPointer<ApplicationBase> app(factory->create(parser.get()));
+    QScopedPointer<ApplicationBase> app(factory->create(options.get()));
     return qApp->exec();
 }

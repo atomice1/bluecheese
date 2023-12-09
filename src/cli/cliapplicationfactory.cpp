@@ -22,6 +22,7 @@
 #include <QTextStream>
 #include "chessboard.h"
 #include "cliapplicationfactory.h"
+#include "clioptions.h"
 #include "discoverapplication.h"
 #include "getfenapplication.h"
 #include "listenapplication.h"
@@ -57,8 +58,24 @@ void CliApplicationFactory::addCommandLineOptions(QCommandLineParser *parser)
     parser->addOption(m_addressOption);
 }
 
-bool CliApplicationFactory::validateArguments(QCommandLineParser *parser, QString *errorMessage)
+Options *CliApplicationFactory::createOptions()
 {
+    return new CliOptions();
+}
+
+bool CliApplicationFactory::processOptions(QCommandLineParser *parser, Options *options, QString *errorMessage)
+{
+    bool success = ApplicationFactoryBase::processOptions(parser, options, errorMessage);
+    if (!success)
+        return false;
+    CliOptions *cliOptions = static_cast<CliOptions *>(options);
+    if (parser->isSet(m_discoverOption))
+        cliOptions->action = CliOptions::Action::Discover;
+    else if (parser->isSet(m_getFenOption))
+        cliOptions->action = CliOptions::Action::GetFen;
+    else if (!parser->value(m_sendFenOption).isNull())
+        cliOptions->action = CliOptions::Action::SendFen;
+    cliOptions->quiet = parser->isSet(m_quietOption);
     QString address = parser->value(m_addressOption);
     if (!address.isNull()) {
         BoardAddress parsedAddress = BoardAddress::fromString(address);
@@ -66,6 +83,7 @@ bool CliApplicationFactory::validateArguments(QCommandLineParser *parser, QStrin
             *errorMessage = QCoreApplication::translate("main", "%1: unable to parse address").arg(address);
             return false;
         }
+        cliOptions->address = parsedAddress;
     }
     QString fen = parser->value(m_sendFenOption);
     if (!fen.isNull()) {
@@ -74,26 +92,28 @@ bool CliApplicationFactory::validateArguments(QCommandLineParser *parser, QStrin
             *errorMessage = QCoreApplication::translate("main", "%1: unable to parse FEN record").arg(fen);
             return false;
         }
+        cliOptions->fenToSend = state;
     }
     return true;
 }
 
-ApplicationBase *CliApplicationFactory::create(QCommandLineParser *parser)
+ApplicationBase *CliApplicationFactory::create(const Options *options)
 {
+    const CliOptions *cliOptions = static_cast<const CliOptions *>(options);
     std::unique_ptr<CliApplicationBase> app;
-    if (parser->isSet(m_discoverOption)) {
-        app.reset(new DiscoverApplication());
-    } else {
-        QString address = parser->value(m_addressOption);
-        if (parser->isSet(m_getFenOption)) {
-            app.reset(new GetFenApplication(address));
-        } else if (!parser->value(m_sendFenOption).isNull()) {
-            QString fen = parser->value(m_sendFenOption);
-            app.reset(new SendFenApplication(address, fen));
-        } else {
-            app.reset(new ListenApplication(address));
-        }
+    switch (cliOptions->action) {
+    case CliOptions::Action::Discover:
+        app.reset(new DiscoverApplication(cliOptions));
+        break;
+    case CliOptions::Action::GetFen:
+        app.reset(new GetFenApplication(cliOptions));
+        break;
+    case CliOptions::Action::SendFen:
+        app.reset(new SendFenApplication(cliOptions));
+        break;
+    case CliOptions::Action::Listen:
+        app.reset(new ListenApplication(cliOptions));
+        break;
     }
-    app->setQuiet(parser->isSet(m_quietOption));
     return app.release();
 }

@@ -23,11 +23,12 @@
 #include "applicationfacade.h"
 #include "chessboard.h"
 #include "cliapplicationbase.h"
+#include "clioptions.h"
 
 using namespace Chessboard;
 
-CliApplicationBase::CliApplicationBase(QObject *parent) :
-    ApplicationBase(parent)
+CliApplicationBase::CliApplicationBase(const CliOptions *options, QObject *parent) :
+    ApplicationBase(options, parent)
 {
     connect(facade(), &ApplicationFacade::connected, this, &CliApplicationBase::onConnected);
     connect(facade(), &ApplicationFacade::disconnected, this, &CliApplicationBase::onDisconnected);
@@ -38,9 +39,14 @@ CliApplicationBase::CliApplicationBase(QObject *parent) :
     connect(facade(), &ApplicationFacade::noLastConnectedAddress, this, &CliApplicationBase::onNoLastConnectedAddress);
 }
 
+bool CliApplicationBase::isQuiet() const
+{
+    return options<CliOptions>()->quiet;
+}
+
 void CliApplicationBase::onConnected(Chessboard::RemoteBoard *board)
 {
-    if (!m_quiet) {
+    if (!isQuiet()) {
         QTextStream ts(stderr, QIODevice::WriteOnly);
         ts << tr("Connected to %1.").arg(board->address().toString()) << "\n";
     }
@@ -48,7 +54,7 @@ void CliApplicationBase::onConnected(Chessboard::RemoteBoard *board)
 
 void CliApplicationBase::onDisconnected()
 {
-    if (!m_quiet) {
+    if (!isQuiet()) {
         QTextStream ts(stderr, QIODevice::WriteOnly);
         ts << tr("Disconnected.") << "\n";
     }

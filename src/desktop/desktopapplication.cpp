@@ -20,8 +20,8 @@
 #include "desktopapplication.h"
 #include "desktopguifacade.h"
 
-DesktopApplication::DesktopApplication(QObject *parent)
-    : GuiApplicationBase(new DesktopGuiFacade, parent)
+DesktopApplication::DesktopApplication(const Options *options, QObject *parent)
+    : GuiApplicationBase(new DesktopGuiFacade, options, parent)
 {
 }
 

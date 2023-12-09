@@ -35,6 +35,7 @@ add_library(chessboard-common STATIC
             guiapplicationbase.h
             guifacade.cpp
             guifacade.h
+            options.h
             version.h)
 
 target_include_directories(chessboard-common PUBLIC .)

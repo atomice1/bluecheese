@@ -18,20 +18,19 @@
 
 #include "applicationfacade.h"
 #include "chessboard.h"
+#include "clioptions.h"
 #include "connectedcliapplicationbase.h"
 
 using namespace Chessboard;
 
-ConnectedCliApplicationBase::ConnectedCliApplicationBase(const QString& address, QObject *parent)
-    : CliApplicationBase{parent}
+ConnectedCliApplicationBase::ConnectedCliApplicationBase(const CliOptions *options, QObject *parent)
+    : CliApplicationBase{options, parent}
 {
-    if (address.isNull()) {
+    if (!options->address.isValid()) {
         QMetaObject::invokeMethod(facade(), &ApplicationFacade::connectToLast, Qt::QueuedConnection);
     } else {
-        BoardAddress parsedAddress = BoardAddress::fromString(address);
-        Q_ASSERT(parsedAddress.isValid());
-        QMetaObject::invokeMethod(this, [this, parsedAddress]() {
-            facade()->connectToBoard(parsedAddress);
-        }, Qt::QueuedConnection);
+        QMetaObject::invokeMethod(this, [this]() {
+                facade()->connectToBoard(this->options<CliOptions>()->address);
+            }, Qt::QueuedConnection);
     }
 }

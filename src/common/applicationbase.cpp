@@ -19,13 +19,24 @@
 #include "applicationbase.h"
 #include "applicationfacade.h"
 
-ApplicationBase::ApplicationBase(QObject *parent)
+ApplicationBase::ApplicationBase(const Options *options, QObject *parent)
     : QObject{parent},
-      m_facade(new ApplicationFacade)
+      m_facade(new ApplicationFacade),
+      m_options(options)
 {
 }
 
 ApplicationBase::~ApplicationBase()
 {
     delete m_facade;
+}
+
+bool ApplicationBase::isFeatureEnabled(Feature feature) const
+{
+    switch (feature) {
+    case Feature::Ai:
+        return m_options->featureAiEnabled;
+    default:
+        return false;
+    }
 }

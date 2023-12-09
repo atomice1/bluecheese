@@ -29,7 +29,7 @@ DesktopApplicationFactory::DesktopApplicationFactory() :
 {
 }
 
-ApplicationBase *DesktopApplicationFactory::create(QCommandLineParser *parser)
+ApplicationBase *DesktopApplicationFactory::create(const Options *options)
 {
-    return new DesktopApplication();
+    return new DesktopApplication(options);
 }

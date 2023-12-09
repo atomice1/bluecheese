@@ -22,8 +22,8 @@
 
 using namespace Chessboard;
 
-GetFenApplication::GetFenApplication(const QString& address, QObject *parent)
-    : ConnectedCliApplicationBase{address, parent}
+GetFenApplication::GetFenApplication(const CliOptions *options, QObject *parent)
+    : ConnectedCliApplicationBase{options, parent}
 {
     connect(facade(), &ApplicationFacade::remoteBoardState, this, &GetFenApplication::onRemoteBoardState);
 }

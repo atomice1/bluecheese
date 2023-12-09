@@ -20,6 +20,7 @@
 #define APPLICATIONBASE_H
 
 #include <QObject>
+#include "options.h"
 
 class ApplicationFacade;
 
@@ -27,14 +28,26 @@ class ApplicationBase : public QObject
 {
     Q_OBJECT
 public:
-    explicit ApplicationBase(QObject *parent = nullptr);
+    enum class Feature {
+        Ai
+    };
+
+    explicit ApplicationBase(const Options *options, QObject *parent = nullptr);
     virtual ~ApplicationBase();
+
+    bool isFeatureEnabled(Feature feature) const;
 
 protected:
     ApplicationFacade *facade() { return m_facade; }
+    template<typename T>
+    const T *options() const {
+        static_assert(std::is_base_of<Options, T>::value, "T not derived from Options");
+        return static_cast<const T *>(m_options);
+    }
 
 private:
     ApplicationFacade *m_facade {};
+    const Options *m_options {};
 };
 
 #endif // APPLICATIONBASE_H

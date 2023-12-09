@@ -23,8 +23,8 @@
 
 using namespace Chessboard;
 
-GuiApplicationBase::GuiApplicationBase(GuiFacade *guiFacade_, QObject *parent) :
-    ApplicationBase(parent),
+GuiApplicationBase::GuiApplicationBase(GuiFacade *guiFacade_, const Options *options, QObject *parent) :
+    ApplicationBase(options, parent),
     m_guiFacade(guiFacade_)
 {
     connect(facade(), &ApplicationFacade::connected, this, &GuiApplicationBase::onConnected);

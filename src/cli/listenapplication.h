@@ -24,7 +24,7 @@
 class ListenApplication : public ConnectedCliApplicationBase
 {
 public:
-    explicit ListenApplication(const QString& address, QObject *parent = nullptr);
+    explicit ListenApplication(const CliOptions *options, QObject *parent = nullptr);
 private slots:
     void onRemoteBoardState(const Chessboard::BoardState& newState);
 };

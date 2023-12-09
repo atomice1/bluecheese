@@ -22,13 +22,14 @@
 #include "applicationbase.h"
 #include "chessboard.h"
 
+class CliOptions;
+
 class CliApplicationBase : public ApplicationBase
 {
     Q_OBJECT
 public:
-    CliApplicationBase(QObject *parent = nullptr);
-    bool quiet() const { return m_quiet; }
-    void setQuiet(bool flag) { m_quiet = flag; }
+    CliApplicationBase(const CliOptions *options, QObject *parent = nullptr);
+    bool isQuiet() const;
 private slots:
     void onConnected(Chessboard::RemoteBoard *board);
     void onDisconnected();
@@ -37,8 +38,6 @@ private slots:
     void onError(const QString& errorMessage);
     void onConnectionFailed();
     void onNoLastConnectedAddress();
-private:
-    bool m_quiet;
 };
 
 #endif // CLIAPPLICATIONBASE_H

@@ -29,8 +29,9 @@ class CliApplicationFactory : public ApplicationFactoryBase
 public:
     CliApplicationFactory();
     void addCommandLineOptions(QCommandLineParser *parser) override;
-    ApplicationBase *create(QCommandLineParser *parser) override;
-    bool validateArguments(QCommandLineParser *parser, QString *errorMessage) override;
+    Options *createOptions() override;
+    ApplicationBase *create(const Options *options) override;
+    bool processOptions(QCommandLineParser *parser, Options *options, QString *errorMessage) override;
 private:
     QCommandLineOption m_quietOption;
     QCommandLineOption m_discoverOption;
