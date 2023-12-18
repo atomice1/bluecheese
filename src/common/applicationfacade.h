@@ -25,6 +25,7 @@
 #include "chessboard.h"
 #include "gameprogress.h"
 
+class AiController;
 class CompositeBoard;
 
 class ApplicationFacade : public QObject
@@ -92,6 +93,11 @@ private:
     Chessboard::ConnectionManager *m_connectionManager {};
     Chessboard::BoardDiscovery *m_boardDiscovery {};
     CompositeBoard *m_board {};
+    AiController *m_aiController {};
+    Chessboard::GameOptions m_gameOptions;
+
+    bool isCurrentPlayerAppAi() const;
+    bool isPlayerAppAi(Chessboard::Colour colour) const;
 friend class MockApplicationFacade;
 };
 

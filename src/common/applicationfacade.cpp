@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "aicontroller.h"
 #include "applicationfacade.h"
 #include "commontranslations.h"
 #include "compositeboard.h"
@@ -61,12 +62,19 @@ ApplicationFacade::ApplicationFacade(QObject *parent)
     connect(m_board, &CompositeBoard::illegalMove, this, &ApplicationFacade::illegalMove);
     connect(m_board, &CompositeBoard::remoteOutOfSyncWithLocal, this, &ApplicationFacade::remoteOutOfSyncWithLocal);
     connect(m_board, &CompositeBoard::boardStateChanged, this, [this](const BoardState& state) {
+        m_aiController->cancel();
         emit boardStateChanged(state);
         emit gameProgressChanged(GameProgress(GameProgress::InProgress));
         emit activeColourChanged(state.activeColour);
     });
-    connect(m_board, &CompositeBoard::promotionRequired, this, &ApplicationFacade::promotionRequired);
-    connect(m_board, &CompositeBoard::drawRequested, this, &ApplicationFacade::drawRequested);
+    connect(m_board, &CompositeBoard::promotionRequired, [this]() {
+        if (!isCurrentPlayerAppAi())
+            emit promotionRequired();
+    });
+    connect(m_board, &CompositeBoard::drawRequested, [this](Colour requestor) {
+        if (!isPlayerAppAi(invertColour(requestor)))
+            emit drawRequested(requestor);
+    });
     connect(m_board, &CompositeBoard::resignation, this, [this](Colour colour) {
         emit resignation(colour);
         emit gameOver();
@@ -83,6 +91,26 @@ ApplicationFacade::ApplicationFacade(QObject *parent)
         emit gameOver();
         emit gameProgressChanged(GameProgress(GameProgress::Draw, reason));
     });
+
+    m_aiController = new AiController(this);
+    connect(this, &ApplicationFacade::activeColourChanged, [this](Colour) {
+        if (isCurrentPlayerAppAi())
+            m_aiController->start(m_board->boardState());
+        else
+            m_aiController->cancel();
+    });
+    connect(this, &ApplicationFacade::promotionRequired, [this]() {
+        if (isCurrentPlayerAppAi())
+            m_aiController->promotionRequired();
+    });
+    connect(this, &ApplicationFacade::drawRequested, [this](Colour requestor) {
+        if (isPlayerAppAi(invertColour(requestor)))
+            m_aiController->drawRequested(requestor);
+    });
+    connect(this, &ApplicationFacade::gameOver, [this]() {
+       m_aiController->cancel();
+    });
+
     m_settings.beginGroup(CONNECTION_GROUP);
     m_lastConnectedAddress = BoardAddress::fromByteArray(m_settings.value(ADDRESS, QByteArray()).toByteArray());
     m_settings.endGroup();
@@ -251,6 +279,7 @@ void ApplicationFacade::requestNewGame()
 void ApplicationFacade::requestNewGameOptions(const Chessboard::GameOptions& gameOptions)
 {
     qDebug("ApplicationFacade::requestNewGameOptions(...)");
+    m_gameOptions = gameOptions;
     m_board->requestNewGameOptions(gameOptions);
 }
 
@@ -277,4 +306,17 @@ void ApplicationFacade::requestPromotion(Chessboard::Piece piece)
     qDebug("ApplicationFacade::requestPromotion(%s)",
            qPrintable(pieceToString(piece)));
     m_board->requestPromotion(piece);
+}
+
+bool ApplicationFacade::isCurrentPlayerAppAi() const
+{
+    return isPlayerAppAi(m_board->boardState().activeColour);
+}
+
+bool ApplicationFacade::isPlayerAppAi(Colour colour) const
+{
+    const PlayerOptions& playerOptions =
+        colour == Colour::Black ? m_gameOptions.black : m_gameOptions.white;
+    return playerOptions.playerType == PlayerType::Ai &&
+           playerOptions.playerLocation == PlayerLocation::LocalApp;
 }

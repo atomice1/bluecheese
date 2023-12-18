@@ -17,6 +17,8 @@
 set(TS_FILES ${CMAKE_SOURCE_DIR}/ts/chessboard-common_en_GB.ts)
 
 add_library(chessboard-common STATIC
+            aicontroller.cpp
+            aicontroller.h
             applicationbase.cpp
             applicationbase.h
             applicationfacade.cpp
