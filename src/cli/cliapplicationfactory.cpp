@@ -63,19 +63,19 @@ Options *CliApplicationFactory::createOptions()
     return new CliOptions();
 }
 
-bool CliApplicationFactory::processOptions(QCommandLineParser *parser, Options *options, QString *errorMessage)
+bool CliApplicationFactory::processOptions(QCommandLineParser *parser, Options& options, QString *errorMessage)
 {
     bool success = ApplicationFactoryBase::processOptions(parser, options, errorMessage);
     if (!success)
         return false;
-    CliOptions *cliOptions = static_cast<CliOptions *>(options);
+    CliOptions& cliOptions = static_cast<CliOptions&>(options);
     if (parser->isSet(m_discoverOption))
-        cliOptions->action = CliOptions::Action::Discover;
+        cliOptions.action = CliOptions::Action::Discover;
     else if (parser->isSet(m_getFenOption))
-        cliOptions->action = CliOptions::Action::GetFen;
+        cliOptions.action = CliOptions::Action::GetFen;
     else if (!parser->value(m_sendFenOption).isNull())
-        cliOptions->action = CliOptions::Action::SendFen;
-    cliOptions->quiet = parser->isSet(m_quietOption);
+        cliOptions.action = CliOptions::Action::SendFen;
+    cliOptions.quiet = parser->isSet(m_quietOption);
     QString address = parser->value(m_addressOption);
     if (!address.isNull()) {
         BoardAddress parsedAddress = BoardAddress::fromString(address);
@@ -83,7 +83,7 @@ bool CliApplicationFactory::processOptions(QCommandLineParser *parser, Options *
             *errorMessage = QCoreApplication::translate("main", "%1: unable to parse address").arg(address);
             return false;
         }
-        cliOptions->address = parsedAddress;
+        cliOptions.address = parsedAddress;
     }
     QString fen = parser->value(m_sendFenOption);
     if (!fen.isNull()) {
@@ -92,16 +92,16 @@ bool CliApplicationFactory::processOptions(QCommandLineParser *parser, Options *
             *errorMessage = QCoreApplication::translate("main", "%1: unable to parse FEN record").arg(fen);
             return false;
         }
-        cliOptions->fenToSend = state;
+        cliOptions.fenToSend = state;
     }
     return true;
 }
 
-ApplicationBase *CliApplicationFactory::create(const Options *options)
+ApplicationBase *CliApplicationFactory::create(const Options& options)
 {
-    const CliOptions *cliOptions = static_cast<const CliOptions *>(options);
+    const CliOptions& cliOptions = static_cast<const CliOptions&>(options);
     std::unique_ptr<CliApplicationBase> app;
-    switch (cliOptions->action) {
+    switch (cliOptions.action) {
     case CliOptions::Action::Discover:
         app.reset(new DiscoverApplication(cliOptions));
         break;

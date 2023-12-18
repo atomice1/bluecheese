@@ -23,7 +23,7 @@
 
 using namespace Chessboard;
 
-SendFenApplication::SendFenApplication(const CliOptions *options, QObject *parent)
+SendFenApplication::SendFenApplication(const CliOptions& options, QObject *parent)
     : ConnectedCliApplicationBase{options, parent}
 {
     connect(facade(), &ApplicationFacade::connected, this, &SendFenApplication::onConnected);
@@ -32,7 +32,7 @@ SendFenApplication::SendFenApplication(const CliOptions *options, QObject *paren
 
 void SendFenApplication::onConnected(RemoteBoard *board)
 {
-    board->setBoardState(options<CliOptions>()->fenToSend);
+    board->setBoardState(options<CliOptions>().fenToSend);
 }
 
 void SendFenApplication::onRemoteBoardState(const BoardState& newState)

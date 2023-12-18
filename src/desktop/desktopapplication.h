@@ -25,7 +25,7 @@ class DesktopApplication : public GuiApplicationBase
 {
     Q_OBJECT
 public:
-    explicit DesktopApplication(const Options *options, QObject *parent = nullptr);
+    explicit DesktopApplication(const Options &options, QObject *parent = nullptr);
     ~DesktopApplication();
 };
 

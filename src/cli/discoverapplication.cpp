@@ -21,7 +21,7 @@
 #include "applicationfacade.h"
 #include "discoverapplication.h"
 
-DiscoverApplication::DiscoverApplication(const CliOptions *options, QObject *parent)
+DiscoverApplication::DiscoverApplication(const CliOptions &options, QObject *parent)
     : CliApplicationBase{options, parent}
 {
     connect(facade(), &ApplicationFacade::boardDiscovered, this, &DiscoverApplication::onBoardDiscovered);

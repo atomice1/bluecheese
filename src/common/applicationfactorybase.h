@@ -34,9 +34,9 @@ public:
                            const QString& translationName = QString());
     virtual QCommandLineParser *createCommandLineParser();
     virtual void addCommandLineOptions(QCommandLineParser *parser);
-    virtual ApplicationBase *create(const Options *options) = 0;
+    virtual ApplicationBase *create(const Options& options) = 0;
     virtual Options *createOptions();
-    virtual bool processOptions(QCommandLineParser *parser, Options *options, QString *errorMessage);
+    virtual bool processOptions(QCommandLineParser *parser, Options& options, QString *errorMessage);
     const QString applicationName() const { return m_applicationName; }
     const QString translationName() const { return m_translationName; }
 private:

@@ -24,7 +24,7 @@
 class SendFenApplication : public ConnectedCliApplicationBase
 {
 public:
-    explicit SendFenApplication(const CliOptions *options, QObject *parent = nullptr);
+    explicit SendFenApplication(const CliOptions& options, QObject *parent = nullptr);
 private slots:
     void onConnected(Chessboard::RemoteBoard *board);
     void onRemoteBoardState(const Chessboard::BoardState& newState);

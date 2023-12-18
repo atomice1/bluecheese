@@ -25,7 +25,7 @@ class DesktopApplicationFactory : public ApplicationFactoryBase
 {
 public:
     DesktopApplicationFactory();
-    ApplicationBase *create(const Options *options) override;
+    ApplicationBase *create(const Options &options) override;
 };
 
 #endif // DESKTOPAPPLICATIONFACTORY_H

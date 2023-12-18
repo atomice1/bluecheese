@@ -24,7 +24,7 @@
 
 using namespace Chessboard;
 
-ListenApplication::ListenApplication(const CliOptions *options, QObject *parent)
+ListenApplication::ListenApplication(const CliOptions& options, QObject *parent)
     : ConnectedCliApplicationBase(options, parent)
 {
     connect(facade(), &ApplicationFacade::remoteBoardState, this, &ListenApplication::onRemoteBoardState);

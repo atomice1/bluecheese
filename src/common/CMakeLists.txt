@@ -35,6 +35,7 @@ add_library(chessboard-common STATIC
             guiapplicationbase.h
             guifacade.cpp
             guifacade.h
+            options.cpp
             options.h
             version.h)
 

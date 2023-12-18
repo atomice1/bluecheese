@@ -30,8 +30,8 @@ public:
     CliApplicationFactory();
     void addCommandLineOptions(QCommandLineParser *parser) override;
     Options *createOptions() override;
-    ApplicationBase *create(const Options *options) override;
-    bool processOptions(QCommandLineParser *parser, Options *options, QString *errorMessage) override;
+    ApplicationBase *create(const Options& options) override;
+    bool processOptions(QCommandLineParser *parser, Options& options, QString *errorMessage) override;
 private:
     QCommandLineOption m_quietOption;
     QCommandLineOption m_discoverOption;

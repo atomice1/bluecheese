@@ -27,7 +27,7 @@
 
 using namespace Chessboard;
 
-CliApplicationBase::CliApplicationBase(const CliOptions *options, QObject *parent) :
+CliApplicationBase::CliApplicationBase(const CliOptions &options, QObject *parent) :
     ApplicationBase(options, parent)
 {
     connect(facade(), &ApplicationFacade::connected, this, &CliApplicationBase::onConnected);
@@ -41,7 +41,7 @@ CliApplicationBase::CliApplicationBase(const CliOptions *options, QObject *paren
 
 bool CliApplicationBase::isQuiet() const
 {
-    return options<CliOptions>()->quiet;
+    return options<CliOptions>().quiet;
 }
 
 void CliApplicationBase::onConnected(Chessboard::RemoteBoard *board)

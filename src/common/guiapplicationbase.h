@@ -28,7 +28,7 @@ class GuiFacade;
 class GuiApplicationBase : public ApplicationBase
 {
 public:
-    GuiApplicationBase(GuiFacade *guiFacade, const Options *options, QObject *parent = nullptr);
+    GuiApplicationBase(GuiFacade *guiFacade, const Options &options, QObject *parent = nullptr);
     virtual ~GuiApplicationBase();
 
     GuiFacade *guiFacade() { return m_guiFacade; }

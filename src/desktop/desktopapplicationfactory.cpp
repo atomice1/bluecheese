@@ -29,7 +29,7 @@ DesktopApplicationFactory::DesktopApplicationFactory() :
 {
 }
 
-ApplicationBase *DesktopApplicationFactory::create(const Options *options)
+ApplicationBase *DesktopApplicationFactory::create(const Options &options)
 {
     return new DesktopApplication(options);
 }

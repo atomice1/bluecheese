@@ -68,10 +68,10 @@ Options *ApplicationFactoryBase::createOptions()
     return new Options();
 }
 
-bool ApplicationFactoryBase::processOptions(QCommandLineParser *parser, Options *options, QString *)
+bool ApplicationFactoryBase::processOptions(QCommandLineParser *parser, Options& options, QString *)
 {
     if (parser->isSet(m_enableFeatureAi))
-        options->featureAiEnabled = true;
+        options.featureAiEnabled = true;
     return true;
 }
 
@@ -98,12 +98,12 @@ int common_main(ApplicationFactoryBase *factory)
     parser->process(qApp->arguments());
     QScopedPointer<Options> options(factory->createOptions());
     QString errorMessage;
-    bool success = factory->processOptions(parser.get(), options.get(), &errorMessage);
+    bool success = factory->processOptions(parser.get(), *options.get(), &errorMessage);
     if (!success) {
         QTextStream ts(stderr, QIODevice::WriteOnly);
         ts << errorMessage << "\n";
         return 1;
     }
-    QScopedPointer<ApplicationBase> app(factory->create(options.get()));
+    QScopedPointer<ApplicationBase> app(factory->create(*options.get()));
     return qApp->exec();
 }

@@ -23,14 +23,14 @@
 
 using namespace Chessboard;
 
-ConnectedCliApplicationBase::ConnectedCliApplicationBase(const CliOptions *options, QObject *parent)
+ConnectedCliApplicationBase::ConnectedCliApplicationBase(const CliOptions &options, QObject *parent)
     : CliApplicationBase{options, parent}
 {
-    if (!options->address.isValid()) {
+    if (!options.address.isValid()) {
         QMetaObject::invokeMethod(facade(), &ApplicationFacade::connectToLast, Qt::QueuedConnection);
     } else {
         QMetaObject::invokeMethod(this, [this]() {
-                facade()->connectToBoard(this->options<CliOptions>()->address);
+                facade()->connectToBoard(this->options<CliOptions>().address);
             }, Qt::QueuedConnection);
     }
 }

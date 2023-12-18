@@ -25,7 +25,7 @@ class DiscoverApplication : public CliApplicationBase
 {
     Q_OBJECT
 public:
-    explicit DiscoverApplication(const CliOptions *options, QObject *parent = nullptr);
+    explicit DiscoverApplication(const CliOptions &options, QObject *parent = nullptr);
 private slots:
     void onBoardDiscovered(const Chessboard::BoardAddress& address);
     void onDiscoveryFinished();

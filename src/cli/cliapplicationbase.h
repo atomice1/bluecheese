@@ -28,7 +28,7 @@ class CliApplicationBase : public ApplicationBase
 {
     Q_OBJECT
 public:
-    CliApplicationBase(const CliOptions *options, QObject *parent = nullptr);
+    CliApplicationBase(const CliOptions &options, QObject *parent = nullptr);
     bool isQuiet() const;
 private slots:
     void onConnected(Chessboard::RemoteBoard *board);
