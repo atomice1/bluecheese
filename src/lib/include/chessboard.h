@@ -340,6 +340,28 @@ private:
     bool pieceCanMove(int fromRow, int fromCol, int toRow, int toCol) const;
 };
 
+enum class PlayerType {
+    Human,
+    Ai
+};
+
+enum class PlayerLocation {
+    LocalBoard,
+    LocalApp,
+    Online
+};
+
+struct PlayerOptions {
+    PlayerType playerType;
+    PlayerLocation playerLocation;
+    int aiNominalElo;
+};
+
+struct GameOptions {
+    PlayerOptions white;
+    PlayerOptions black;
+};
+
 class LIBCHESSBOARD_EXPORT RemoteBoard : public QObject {
     Q_OBJECT
 public:
@@ -348,6 +370,7 @@ public:
     BoardAddress address() const;
     virtual void requestRemoteBoardState();
     virtual void requestNewGame();
+    virtual void requestNewGame(const GameOptions& gameOptions);
     virtual void requestMove(int fromRow, int fromCol, int toRow, int toCol);
     void requestMove(const Square& from, const Square& to) {
         requestMove(from.row, from.col, to.row, to.col);

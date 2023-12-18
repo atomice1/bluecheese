@@ -23,18 +23,26 @@
 #include "desktopguifacade.h"
 #include "discoverydialog.h"
 #include "mainwindow.h"
+#include "newgamedialog.h"
+#include "options.h"
 #include "promotiondialog.h"
 #include "syncdialog.h"
 
-DesktopGuiFacade::DesktopGuiFacade(QObject *parent)
+DesktopGuiFacade::DesktopGuiFacade(const Options& options, QObject *parent)
     : GuiFacade{parent},
-      m_mainWindow(new MainWindow)
+      m_mainWindow(new MainWindow),
+      m_options(options)
 {
     connect(m_mainWindow, &MainWindow::connectRequested, this, &GuiFacade::connectRequested);
     connect(m_mainWindow, &MainWindow::disconnectRequested, this, &GuiFacade::disconnectRequested);
     connect(m_mainWindow, &MainWindow::sendFenRequested, this, &GuiFacade::sendFenRequested);
     connect(m_mainWindow, &MainWindow::requestMove, this, &GuiFacade::requestMove);
-    connect(m_mainWindow, &MainWindow::requestNewGame, this, &GuiFacade::requestNewGame);
+    connect(m_mainWindow, &MainWindow::requestNewGame, this, [this]() {
+        if (m_options.isFeatureEnabled(Options::Feature::Ai))
+            showNewGameDialog();
+        else
+            emit requestNewGame();
+    });
     connect(m_mainWindow, &MainWindow::requestEdit, this, &GuiFacade::requestEdit);
     connect(m_mainWindow, &MainWindow::requestDraw, this, [this](){
         emit requestDraw(m_activeColour);
@@ -265,4 +273,18 @@ void DesktopGuiFacade::showIllegalEditPopup(Chessboard::IllegalBoardReason reaso
 void DesktopGuiFacade::setEditMode(bool enabled)
 {
     m_mainWindow->setEditMode(enabled);
+}
+
+void DesktopGuiFacade::showNewGameDialog()
+{
+    NewGameDialog *newGameDialog = new NewGameDialog(m_mainWindow);
+    newGameDialog->setAttribute(Qt::WA_DeleteOnClose);
+    newGameDialog->setModal(true);
+    newGameDialog->show();
+    connect(newGameDialog, &NewGameDialog::newGameRequested, this,
+            [this, newGameDialog](const Chessboard::GameOptions& gameOptions){
+                QMetaObject::invokeMethod(this, [this, gameOptions]() {
+                    emit requestNewGameOptions(gameOptions);
+                    }, Qt::QueuedConnection);
+            });
 }

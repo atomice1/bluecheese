@@ -41,6 +41,7 @@ public slots:
     void requestMove(int fromRow, int fromCol, int toRow, int toCol) override;
     void requestRemoteBoardState() override;
     void requestNewGame() override;
+    void requestNewGame(const Chessboard::GameOptions& gameOptions) override;
     void requestPromotion(Piece piece) override;
     // TODO
     //void requestDraw(Colour requestor);

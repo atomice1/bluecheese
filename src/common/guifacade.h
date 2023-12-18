@@ -43,6 +43,7 @@ signals:
     void syncFromLocalToRemote();
     void syncFromRemoteToLocal();
     void requestNewGame();
+    void requestNewGameOptions(Chessboard::GameOptions gameOptions);
     void requestPromotion(Chessboard::Piece piece);
     void requestDraw(Chessboard::Colour requestor);
     void requestResignation(Chessboard::Colour requestor);
@@ -69,6 +70,7 @@ public slots:
     virtual void showDrawRequestedPopup(Chessboard::Colour requestor) = 0;
     virtual void setEditMode(bool enabled) = 0;
     virtual void showIllegalEditPopup(Chessboard::IllegalBoardReason reason) = 0;
+    virtual void showNewGameDialog() = 0;
 };
 
 #endif // GUIFACADE_H

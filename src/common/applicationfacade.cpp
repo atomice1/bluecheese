@@ -248,6 +248,12 @@ void ApplicationFacade::requestNewGame()
     m_board->requestNewGame();
 }
 
+void ApplicationFacade::requestNewGameOptions(const Chessboard::GameOptions& gameOptions)
+{
+    qDebug("ApplicationFacade::requestNewGameOptions(...)");
+    m_board->requestNewGameOptions(gameOptions);
+}
+
 void ApplicationFacade::requestMove(int fromRow, int fromCol, int toRow, int toCol)
 {
     qDebug("ApplicationFacade::requestMove(%d, %d, %d, %d)", fromRow, fromCol, toRow, toCol);

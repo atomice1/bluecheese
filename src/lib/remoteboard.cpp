@@ -60,6 +60,10 @@ void RemoteBoard::requestNewGame()
 {
 }
 
+void RemoteBoard::requestNewGame(const Chessboard::GameOptions& gameOptions)
+{
+}
+
 void RemoteBoard::requestPromotion(Piece)
 {
 }

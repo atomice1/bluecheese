@@ -148,6 +148,15 @@ void CompositeBoard::requestNewGame()
     emit boardStateChanged(m_local);
 }
 
+void CompositeBoard::requestNewGameOptions(const Chessboard::GameOptions& gameOptions)
+{
+    m_drawRequested = false;
+    m_local = BoardState::newGame();
+    if (m_remote)
+        m_remote->requestNewGame(gameOptions);
+    emit boardStateChanged(m_local);
+}
+
 void CompositeBoard::requestPromotion(Piece piece)
 {
     m_drawRequested = false;

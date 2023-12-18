@@ -25,11 +25,12 @@
 class ConnectingDialog;
 class DiscoveryDialog;
 class MainWindow;
+class Options;
 
 class DesktopGuiFacade : public GuiFacade
 {
 public:
-    explicit DesktopGuiFacade(QObject *parent = nullptr);
+    explicit DesktopGuiFacade(const Options& options, QObject *parent = nullptr);
     virtual ~DesktopGuiFacade();
 
 public slots:
@@ -53,6 +54,7 @@ public slots:
     void showDrawRequestedPopup(Chessboard::Colour requestor) override;
     void setEditMode(bool enabled) override;
     void showIllegalEditPopup(Chessboard::IllegalBoardReason reason) override;
+    void showNewGameDialog() override;
 
 private slots:
     void updateStatusMessage();
@@ -66,6 +68,7 @@ private:
     Chessboard::Colour m_activeColour { Chessboard::Colour::White };
     ConnectionState m_connectionState { ConnectionState::Connected };
     GameProgress m_progress { GameProgress::InProgress };
+    const Options& m_options;
 };
 
 #endif // DESKTOPGUIFACADE_H

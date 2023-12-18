@@ -53,6 +53,7 @@ GuiApplicationBase::GuiApplicationBase(GuiFacade *guiFacade_, const Options &opt
     connect(guiFacade(), &GuiFacade::syncFromLocalToRemote, this, &GuiApplicationBase::onSyncFromLocalToRemote);    //QMetaObject::invokeMethod(facade(), &ApplicationFacade::connectToLastOrDiscover, Qt::QueuedConnection);
     connect(guiFacade(), &GuiFacade::requestMove, this, &GuiApplicationBase::onRequestMove);
     connect(guiFacade(), &GuiFacade::requestNewGame, this, &GuiApplicationBase::onRequestNewGame);
+    connect(guiFacade(), &GuiFacade::requestNewGameOptions, this, &GuiApplicationBase::onRequestNewGameOptions);
     connect(guiFacade(), &GuiFacade::requestDraw, this, &GuiApplicationBase::onRequestDraw);
     connect(guiFacade(), &GuiFacade::requestResignation, this, &GuiApplicationBase::onRequestResignation);
     connect(guiFacade(), &GuiFacade::requestPromotion, this, &GuiApplicationBase::onRequestPromotion);
@@ -213,6 +214,12 @@ void GuiApplicationBase::onRequestNewGame()
 {
     qDebug("GuiApplicationBase::onRequestNewGame()");
     facade()->requestNewGame();
+}
+
+void GuiApplicationBase::onRequestNewGameOptions(const Chessboard::GameOptions& gameOptions)
+{
+    qDebug("GuiApplicationBase::onRequestNewGameOptions()");
+    facade()->requestNewGameOptions(gameOptions);
 }
 
 void GuiApplicationBase::onDrawRequested(Chessboard::Colour requestor)

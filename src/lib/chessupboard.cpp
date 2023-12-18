@@ -299,6 +299,12 @@ void ChessUpBoard::requestNewGame()
     setBoardState(BoardState::newGame());
 }
 
+void ChessUpBoard::requestNewGame(const Chessboard::GameOptions& gameOptions)
+{
+    setBoardState(BoardState::newGame());
+    qWarning("TODO: requestNewGame(...)");
+}
+
 void ChessUpBoard::requestMove(int fromRow, int fromCol, int toRow, int toCol)
 {
     Q_ASSERT(fromRow >= 0 && fromRow < 8 && toRow >= 0 && toCol < 8);
