@@ -334,6 +334,7 @@ struct LIBCHESSBOARD_EXPORT BoardState {
     bool isPromotionRequired() const;
     bool isLegal(IllegalBoardReason *reason) const;
     QByteArray key() const;
+    QList<QPair<Square, Square> > legalMoves() const;
     static BoardState fromFenString(const QString& fen);
     static BoardState newGame();
 private:

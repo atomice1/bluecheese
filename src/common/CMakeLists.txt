@@ -19,6 +19,8 @@ set(TS_FILES ${CMAKE_SOURCE_DIR}/ts/chessboard-common_en_GB.ts)
 add_library(chessboard-common STATIC
             aicontroller.cpp
             aicontroller.h
+            aiplayer.cpp
+            aiplayer.h
             applicationbase.cpp
             applicationbase.h
             applicationfacade.cpp
@@ -39,6 +41,8 @@ add_library(chessboard-common STATIC
             guifacade.h
             options.cpp
             options.h
+            randomaiplayer.cpp
+            randomaiplayer.h
             version.h)
 
 target_include_directories(chessboard-common PUBLIC .)

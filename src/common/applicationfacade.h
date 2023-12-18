@@ -95,6 +95,7 @@ private:
     CompositeBoard *m_board {};
     AiController *m_aiController {};
     Chessboard::GameOptions m_gameOptions;
+    GameProgress m_gameProgress;
 
     bool isCurrentPlayerAppAi() const;
     bool isPlayerAppAi(Chessboard::Colour colour) const;

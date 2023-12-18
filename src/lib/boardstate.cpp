@@ -906,6 +906,25 @@ QByteArray BoardState::key() const
     return ret;
 }
 
+QList<QPair<Square, Square> > BoardState::legalMoves() const
+{
+    QList<QPair<Square, Square> > moves;
+    for (int row=0;row<8;++row) {
+        for (int col=0;col<8;++col) {
+            const ColouredPiece& piece = state[row][col];
+            if (piece != ColouredPiece::None && piece.colour() == activeColour) {
+                for (int row2=0;row2<8;++row2) {
+                    for (int col2=0;col2<8;++col2) {
+                        if (isLegalMove(row, col, row2, col2))
+                            moves.append(qMakePair(Square(row, col), Square(row2, col2)));
+                    }
+                }
+            }
+        }
+    }
+    return moves;
+}
+
 Q_GLOBAL_STATIC(QRegularExpression, algebraicNotationRegExp,
                 QLatin1String("^(?<castling>"
                                 "(?<piece>[KQRBN])?"

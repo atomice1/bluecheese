@@ -20,6 +20,7 @@
 #include "applicationfacade.h"
 #include "commontranslations.h"
 #include "compositeboard.h"
+#include "randomaiplayer.h"
 
 using namespace Chessboard;
 
@@ -67,11 +68,11 @@ ApplicationFacade::ApplicationFacade(QObject *parent)
         emit gameProgressChanged(GameProgress(GameProgress::InProgress));
         emit activeColourChanged(state.activeColour);
     });
-    connect(m_board, &CompositeBoard::promotionRequired, [this]() {
+    connect(m_board, &CompositeBoard::promotionRequired, this, [this]() {
         if (!isCurrentPlayerAppAi())
             emit promotionRequired();
     });
-    connect(m_board, &CompositeBoard::drawRequested, [this](Colour requestor) {
+    connect(m_board, &CompositeBoard::drawRequested, this, [this](Colour requestor) {
         if (!isPlayerAppAi(invertColour(requestor)))
             emit drawRequested(requestor);
     });
@@ -93,22 +94,38 @@ ApplicationFacade::ApplicationFacade(QObject *parent)
     });
 
     m_aiController = new AiController(this);
-    connect(this, &ApplicationFacade::activeColourChanged, [this](Colour) {
+    RandomAiPlayer *whiteAiPlayer = new RandomAiPlayer(Colour::White, this);
+    m_aiController->setAiPlayer(Colour::White, whiteAiPlayer);
+    RandomAiPlayer *blackAiPlayer = new RandomAiPlayer(Colour::Black, this);
+    m_aiController->setAiPlayer(Colour::Black, blackAiPlayer);
+    connect(this, &ApplicationFacade::activeColourChanged, this, [this](Colour colour) {
+            qDebug("activeColourChanged -- do AI");
+            if (m_gameProgress.state == GameProgress::InProgress) {
+                if (isCurrentPlayerAppAi())
+                    m_aiController->start(colour, m_board->boardState());
+                else
+                    m_aiController->cancel(colour);
+            }
+        }, Qt::QueuedConnection);
+    connect(this, &ApplicationFacade::promotionRequired, this, [this]() {
         if (isCurrentPlayerAppAi())
-            m_aiController->start(m_board->boardState());
-        else
-            m_aiController->cancel();
+            m_aiController->promotionRequired(m_board->boardState().activeColour);
     });
-    connect(this, &ApplicationFacade::promotionRequired, [this]() {
-        if (isCurrentPlayerAppAi())
-            m_aiController->promotionRequired();
-    });
-    connect(this, &ApplicationFacade::drawRequested, [this](Colour requestor) {
+    connect(this, &ApplicationFacade::drawRequested, this, [this](Colour requestor) {
         if (isPlayerAppAi(invertColour(requestor)))
             m_aiController->drawRequested(requestor);
     });
-    connect(this, &ApplicationFacade::gameOver, [this]() {
-       m_aiController->cancel();
+    connect(this, &ApplicationFacade::gameOver, this, [this]() {
+        qDebug("gameOver -- cancel AI");
+        m_aiController->cancel();
+    });
+    connect(m_aiController, &AiController::requestMove, this, &ApplicationFacade::requestMove);
+    connect(m_aiController, &AiController::requestDraw, this, &ApplicationFacade::requestDraw);
+    connect(m_aiController, &AiController::requestResignation, this, &ApplicationFacade::requestResignation);
+    connect(m_aiController, &AiController::requestPromotion, this, &ApplicationFacade::requestPromotion);
+
+    connect(this, &ApplicationFacade::gameProgressChanged, this, [this](GameProgress gameProgress) {
+        m_gameProgress = gameProgress;
     });
 
     m_settings.beginGroup(CONNECTION_GROUP);
