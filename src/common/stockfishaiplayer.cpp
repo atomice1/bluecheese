@@ -1,6 +1,27 @@
 #include <QFile>
 #include "stockfishaiplayer.h"
 
+namespace {
+    QByteArray section(const QByteArray& line, int index)
+    {
+        int start = 0;
+        int end;
+        for (;;) {
+            end = line.indexOf(' ', start);
+            if (end == -1) {
+                end = line.indexOf('\n', start);
+                if (end == -1)
+                    end = line.length();
+            }
+            if (index == 0)
+                break;
+            index--;
+            start = end + 1;
+        }
+        return line.mid(start, end - start);
+    }
+}
+
 StockfishAiPlayer::StockfishAiPlayer(Chessboard::Colour colour, const QString& stockfishPath, QObject *parent) :
     AiPlayer(colour, parent),
     m_stockfishPath(stockfishPath)
@@ -25,6 +46,7 @@ bool StockfishAiPlayer::initialize()
         return false;
     }
     m_process = new QProcess(this);
+    connect(m_process, &QProcess::readyRead, this, &StockfishAiPlayer::readyReadFromEngine);
     m_process->start(m_stockfishPath);
     if (!m_process->waitForStarted()) {
         emit error(EngineNoStart);
@@ -35,18 +57,32 @@ bool StockfishAiPlayer::initialize()
         emit error(EngineNoBoot);
         return false;
     }
+    //sendCommand("setoption name UCI_LimitStrength value true");
     return true;
 }
 
 void StockfishAiPlayer::sendCommand(const QByteArray& command)
 {
     qDebug("sendCommand: %s", command.constData());
+    Q_ASSERT(m_process);
     m_process->write(command + "\n");
+}
+
+void StockfishAiPlayer::readyReadFromEngine()
+{
+    if (m_waitingForResponse)
+        return;
+    while (m_process->canReadLine()) {
+        QByteArray line = m_process->readLine();
+        line = line.simplified();
+        processResponse(line);
+    }
 }
 
 QByteArray StockfishAiPlayer::waitForResponse(const QByteArray& response)
 {
-    for (;;) {
+    m_waitingForResponse = true;
+    while (!isCancelled()) {
         if (!m_process->waitForReadyRead()) {
             qDebug("StockfishAiPlayer::waitForResponse: waitForReadyRead timed out");
             emit error(EngineTimedOut);
@@ -56,21 +92,26 @@ QByteArray StockfishAiPlayer::waitForResponse(const QByteArray& response)
             QByteArray line = m_process->readLine();
             line = line.simplified();
             processResponse(line);
-            int space = line.indexOf(' ');
-            if (space == -1) {
-                space = line.indexOf('\n');
-                if (space == -1)
-                    space = line.length();
-            }
-            if (line.left(space) == response)
+            if (section(line, 0) == response) {
+                m_waitingForResponse = false;
                 return line;
+            }
         }
     }
+    m_waitingForResponse = false;
+    return QByteArray();
 }
 
 void StockfishAiPlayer::processResponse(const QByteArray& response)
 {
     qDebug("processResponse: %s", response.constData());
+    if (section(response, 0) == "bestmove") {
+        QByteArray move = section(response, 1);
+        Chessboard::AlgebraicNotation an = Chessboard::AlgebraicNotation::fromString(QString::fromLatin1(move));
+        emit requestMove(an.fromRow, an.fromCol, an.toRow, an.toCol);
+        if (an.promotion)
+            emit requestPromotion(an.promotionPiece);
+    }
 }
 
 void StockfishAiPlayer::start(const Chessboard::BoardState& state)
@@ -83,6 +124,17 @@ void StockfishAiPlayer::start(const Chessboard::BoardState& state)
     sendCommand("isready");
     if (waitForResponse("readyok").isNull())
         return;
+    sendCommand("position fen " + state.toFenString().toLatin1());
+    sendCommand("isready");
+    if (waitForResponse("readyok").isNull())
+        return;
+    sendCommand("go movetime 200");
+}
+
+void StockfishAiPlayer::cancel()
+{
+    if (m_process)
+        sendCommand("stop");
 }
 
 void StockfishAiPlayer::promotionRequired()
