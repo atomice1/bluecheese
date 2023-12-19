@@ -22,6 +22,7 @@
 #include <QObject>
 #include <QSettings>
 
+#include "aiplayer.h"
 #include "chessboard.h"
 #include "gameprogress.h"
 
@@ -83,6 +84,7 @@ public slots:
 protected slots:
     virtual void onConnectionError(Chessboard::ConnectionManager::Error error);
     virtual void onDiscoveryError(Chessboard::BoardDiscovery::Error error);
+    virtual void aiError(AiPlayer::Error error);
 
 private slots:
     virtual void setLastConnectedAddress(const Chessboard::BoardAddress& address);

@@ -21,6 +21,7 @@
 #include "commontranslations.h"
 #include "compositeboard.h"
 #include "randomaiplayer.h"
+#include "stockfishaiplayer.h"
 
 using namespace Chessboard;
 
@@ -29,6 +30,8 @@ namespace {
     const QLatin1String APPLICATION_NAME("chessboard");
     const QLatin1String CONNECTION_GROUP("connection");
     const QLatin1String ADDRESS("address");
+    const QLatin1String STOCKFISH_GROUP("stockfish");
+    const QLatin1String PATH("path");
 }
 
 ApplicationFacade::ApplicationFacade(QObject *parent)
@@ -96,7 +99,12 @@ ApplicationFacade::ApplicationFacade(QObject *parent)
     m_aiController = new AiController(this);
     RandomAiPlayer *whiteAiPlayer = new RandomAiPlayer(Colour::White, this);
     m_aiController->setAiPlayer(Colour::White, whiteAiPlayer);
-    RandomAiPlayer *blackAiPlayer = new RandomAiPlayer(Colour::Black, this);
+    m_settings.beginGroup(STOCKFISH_GROUP);
+    QString stockfishPath = m_settings.value(PATH, QString()).toString();
+    if (stockfishPath.isEmpty())
+        stockfishPath = QLatin1String("/opt/homebrew/bin/stockfish");
+    m_settings.endGroup();
+    StockfishAiPlayer *blackAiPlayer = new StockfishAiPlayer(Colour::Black, stockfishPath, this);
     m_aiController->setAiPlayer(Colour::Black, blackAiPlayer);
     connect(this, &ApplicationFacade::activeColourChanged, this, [this](Colour colour) {
             qDebug("activeColourChanged -- do AI");
@@ -123,6 +131,7 @@ ApplicationFacade::ApplicationFacade(QObject *parent)
     connect(m_aiController, &AiController::requestDraw, this, &ApplicationFacade::requestDraw);
     connect(m_aiController, &AiController::requestResignation, this, &ApplicationFacade::requestResignation);
     connect(m_aiController, &AiController::requestPromotion, this, &ApplicationFacade::requestPromotion);
+    connect(m_aiController, &AiController::error, this, &ApplicationFacade::aiError);
 
     connect(this, &ApplicationFacade::gameProgressChanged, this, [this](GameProgress gameProgress) {
         m_gameProgress = gameProgress;
@@ -336,4 +345,35 @@ bool ApplicationFacade::isPlayerAppAi(Colour colour) const
         colour == Colour::Black ? m_gameOptions.black : m_gameOptions.white;
     return playerOptions.playerType == PlayerType::Ai &&
            playerOptions.playerLocation == PlayerLocation::LocalApp;
+}
+
+void ApplicationFacade::aiError(AiPlayer::Error error)
+{
+    qDebug("ApplicationFacade::aiError(%d)", error);
+    QString errorMessage;
+    switch (error) {
+    case AiPlayer::EngineNotConfigured:
+        errorMessage = tr("engine not configured");
+        break;
+    case AiPlayer::EngineNotFound:
+        errorMessage = tr("configured engine not found");
+        break;
+    case AiPlayer::EngineIncompatible:
+        errorMessage = tr("engine is incompatible");
+        break;
+    case AiPlayer::EngineNoStart:
+        errorMessage = tr("engine executable did not start properly");
+        break;
+    case AiPlayer::EngineNoBoot:
+        errorMessage = tr("engine did not boot properly");
+        break;
+    case AiPlayer::EngineTimedOut:
+        errorMessage = tr("engine timed out");
+        break;
+    case AiPlayer::UnknownError:
+    default:
+        errorMessage = tr("unknown engine error");
+        break;
+    }
+    emit this->error(errorMessage);
 }

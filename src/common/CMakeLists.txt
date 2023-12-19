@@ -43,6 +43,8 @@ add_library(chessboard-common STATIC
             options.h
             randomaiplayer.cpp
             randomaiplayer.h
+            stockfishaiplayer.cpp
+            stockfishaiplayer.h
             version.h)
 
 target_include_directories(chessboard-common PUBLIC .)

@@ -19,7 +19,7 @@ void RandomAiPlayer::start(const Chessboard::BoardState& state)
 
 void RandomAiPlayer::promotionRequired()
 {
-    requestPromotion(Chessboard::Piece::Queen);
+    emit requestPromotion(Chessboard::Piece::Queen);
 }
 
 void RandomAiPlayer::drawRequested()

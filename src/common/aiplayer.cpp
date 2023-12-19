@@ -19,5 +19,8 @@ bool AiPlayer::isCancelled() const
 void AiPlayer::cancel()
 {
     m_cancelled = true;
+    QMetaObject::invokeMethod(this, [this]() {
+            m_cancelled = false;
+        }, Qt::QueuedConnection);
 }
 

@@ -20,6 +20,19 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Test)
 
 enable_testing(true)
 
+add_executable(tst_aicontroller
+    tst_aicontroller.cpp
+)
+add_test(NAME aicontroller COMMAND tst_aicontroller)
+
+target_link_libraries(tst_aicontroller
+    PUBLIC
+        Qt${QT_VERSION_MAJOR}::Core
+        Qt${QT_VERSION_MAJOR}::Test
+        chessboard
+    PRIVATE
+        chessboard-common)
+
 add_executable(tst_applicationfacade
     tst_applicationfacade.cpp
 )

@@ -4,26 +4,47 @@
 
 AiController::AiController(QObject *parent)
     : QObject{parent},
-      m_thread(new QThread(this))
-{}
+      m_thread(new QThread)
+{
+    connect(m_thread, &QThread::finished, m_thread, &QThread::deleteLater);
+    m_thread->start();
+}
+
+AiController::~AiController()
+{
+    if (m_aiPlayer[0])
+        QMetaObject::invokeMethod(m_aiPlayer[0], &AiPlayer::deleteLater, Qt::QueuedConnection);
+    if (m_aiPlayer[1])
+        QMetaObject::invokeMethod(m_aiPlayer[1], &AiPlayer::deleteLater, Qt::QueuedConnection);
+    QObject *threadKiller = new QObject;
+    threadKiller->moveToThread(m_thread);
+    connect(threadKiller, &QObject::destroyed, m_thread, &QThread::quit);
+    QMetaObject::invokeMethod(threadKiller, [threadKiller]() {
+            threadKiller->deleteLater();
+        }, Qt::QueuedConnection);
+}
 
 //! This class takes ownership of aiPlayer
 void AiController::setAiPlayer(Chessboard::Colour colour, AiPlayer *aiPlayer)
 {
     AiPlayer **ref = aiPlayerRef(colour);
-    if (*ref) {
-        (*ref)->cancel();
-        disconnect(*ref, &AiPlayer::requestMove, this, &AiController::requestMove);
-        disconnect(*ref, &AiPlayer::requestDraw, this, &AiController::requestDraw);
-        disconnect(*ref, &AiPlayer::requestResignation, this, &AiController::requestResignation);
-        disconnect(*ref, &AiPlayer::requestPromotion, this, &AiController::requestPromotion);
+    AiPlayer *oldAiPlayer = *ref;
+    if (oldAiPlayer) {
+        oldAiPlayer->cancel();
+        disconnect(oldAiPlayer, &AiPlayer::requestMove, this, &AiController::requestMove);
+        disconnect(oldAiPlayer, &AiPlayer::requestDraw, this, &AiController::requestDraw);
+        disconnect(oldAiPlayer, &AiPlayer::requestResignation, this, &AiController::requestResignation);
+        disconnect(oldAiPlayer, &AiPlayer::requestPromotion, this, &AiController::requestPromotion);
+        QMetaObject::invokeMethod(oldAiPlayer, &AiPlayer::deleteLater, Qt::QueuedConnection);
     }
     *ref = aiPlayer;
-    if (*ref) {
-        connect(*ref, &AiPlayer::requestMove, this, &AiController::requestMove);
-        connect(*ref, &AiPlayer::requestDraw, this, &AiController::requestDraw);
-        connect(*ref, &AiPlayer::requestResignation, this, &AiController::requestResignation);
-        connect(*ref, &AiPlayer::requestPromotion, this, &AiController::requestPromotion);
+    if (aiPlayer) {
+        aiPlayer->setParent(nullptr);
+        aiPlayer->moveToThread(m_thread);
+        connect(aiPlayer, &AiPlayer::requestMove, this, &AiController::requestMove, Qt::QueuedConnection);
+        connect(aiPlayer, &AiPlayer::requestDraw, this, &AiController::requestDraw, Qt::QueuedConnection);
+        connect(aiPlayer, &AiPlayer::requestResignation, this, &AiController::requestResignation, Qt::QueuedConnection);
+        connect(aiPlayer, &AiPlayer::requestPromotion, this, &AiController::requestPromotion, Qt::QueuedConnection);
     }
 }
 

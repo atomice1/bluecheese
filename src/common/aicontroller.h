@@ -12,6 +12,7 @@ class AiController : public QObject
     Q_OBJECT
 public:
     explicit AiController(QObject *parent = nullptr);
+    ~AiController();
     void setAiPlayer(Chessboard::Colour colour, AiPlayer *aiPlayer);
 
 signals:
@@ -19,6 +20,7 @@ signals:
     void requestDraw(Chessboard::Colour requestor);
     void requestResignation(Chessboard::Colour requestor);
     void requestPromotion(Chessboard::Piece piece);
+    void error(AiPlayer::Error error);
 
 public slots:
     void start(Chessboard::Colour colour, const Chessboard::BoardState& state);

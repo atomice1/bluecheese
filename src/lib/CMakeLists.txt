@@ -33,6 +33,7 @@ add_library(chessboard SHARED
   connectionmanager.cpp
   connectionmanager_p.h
   discovery.cpp
+  gameoptions.cpp
   remoteboard_p.h
   remoteboard.cpp
   pgn.cpp

@@ -359,6 +359,7 @@ struct PlayerOptions {
 };
 
 struct GameOptions {
+    GameOptions();
     PlayerOptions white;
     PlayerOptions black;
 };
