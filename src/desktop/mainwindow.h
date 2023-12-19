@@ -44,6 +44,7 @@ public slots:
     void setStatusMessage(const QString& message);
     void setGameInProgress(bool flag);
     void setEditMode(bool enabled);
+    void setLocalPlayer(Chessboard::Colour color, bool localPlayer);
 
 signals:
     void connectRequested();

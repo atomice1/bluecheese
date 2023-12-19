@@ -263,3 +263,8 @@ void MainWindow::on_action_Empty_triggered()
 {
     changePiece(Chessboard::ColouredPiece::None);
 }
+
+void MainWindow::setLocalPlayer(Chessboard::Colour colour, bool localPlayer)
+{
+    m_scene->setLocalPlayer(colour, localPlayer);
+}

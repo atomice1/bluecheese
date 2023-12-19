@@ -293,4 +293,10 @@ void DesktopGuiFacade::showNewGameDialog()
 void DesktopGuiFacade::gameOptionsChanged(const Chessboard::GameOptions& gameOptions)
 {
     m_gameOptions = gameOptions;
+    m_mainWindow->setLocalPlayer(Chessboard::Colour::White,
+                                 gameOptions.white.playerType == Chessboard::PlayerType::Human &&
+                                 gameOptions.white.playerLocation == Chessboard::PlayerLocation::LocalApp);
+    m_mainWindow->setLocalPlayer(Chessboard::Colour::Black,
+                                 gameOptions.black.playerType == Chessboard::PlayerType::Human &&
+                                 gameOptions.black.playerLocation == Chessboard::PlayerLocation::LocalApp);
 }

@@ -33,6 +33,7 @@ public:
     explicit ChessboardScene(QObject *parent = nullptr);
     Chessboard::BoardState boardState() const;
     Chessboard::Square selectedSquare() const;
+    void setLocalPlayer(Chessboard::Colour colour, bool localPlayer);
 
 signals:
     void squareSelected(int row, int col);
@@ -60,6 +61,7 @@ private:
     Chessboard::Square m_from, m_to;
     bool m_gameInProgress { true };
     bool m_editMode { false };
+    bool m_localPlayer[2] {};
 };
 
 #endif // CHESSBOARDSCENE_H

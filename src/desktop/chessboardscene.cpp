@@ -218,10 +218,14 @@ void ChessboardScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
     }
 }
 
-bool ChessboardScene::isLocalPlayerColour(Chessboard::Colour)
+bool ChessboardScene::isLocalPlayerColour(Chessboard::Colour colour)
 {
-    // TODO?
-    return true;
+    switch (colour) {
+    case Chessboard::Colour::White:
+        return m_localPlayer[0];
+    case Chessboard::Colour::Black:
+        return m_localPlayer[1];
+    }
 }
 
 void ChessboardScene::setGameInProgress(bool flag)
@@ -237,4 +241,16 @@ void ChessboardScene::setEditMode(bool enabled)
     updateSquares();
     if (enabled)
         emit squareSelected(-1, -1);
+}
+
+void ChessboardScene::setLocalPlayer(Chessboard::Colour colour, bool localPlayer)
+{
+    switch (colour) {
+    case Chessboard::Colour::White:
+        m_localPlayer[0] = localPlayer;
+        break;
+    case Chessboard::Colour::Black:
+        m_localPlayer[1] = localPlayer;
+        break;
+    }
 }
