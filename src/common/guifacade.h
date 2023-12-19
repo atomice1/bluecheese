@@ -71,6 +71,7 @@ public slots:
     virtual void setEditMode(bool enabled) = 0;
     virtual void showIllegalEditPopup(Chessboard::IllegalBoardReason reason) = 0;
     virtual void showNewGameDialog() = 0;
+    virtual void gameOptionsChanged(const Chessboard::GameOptions& gameOptions) = 0;
 };
 
 #endif // GUIFACADE_H

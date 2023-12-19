@@ -55,6 +55,7 @@ public slots:
     void setEditMode(bool enabled) override;
     void showIllegalEditPopup(Chessboard::IllegalBoardReason reason) override;
     void showNewGameDialog() override;
+    void gameOptionsChanged(const Chessboard::GameOptions& gameOptions) override;
 
 private slots:
     void updateStatusMessage();
@@ -69,6 +70,7 @@ private:
     ConnectionState m_connectionState { ConnectionState::Connected };
     GameProgress m_progress { GameProgress::InProgress };
     const Options& m_options;
+    Chessboard::GameOptions m_gameOptions;
 };
 
 #endif // DESKTOPGUIFACADE_H

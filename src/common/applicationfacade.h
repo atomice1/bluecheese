@@ -35,6 +35,7 @@ class ApplicationFacade : public QObject
 public:
     explicit ApplicationFacade(QObject *parent = nullptr);
     QSettings *settings() { return &m_settings; }
+    Chessboard::GameOptions gameOptions() { return m_gameOptions; }
 
 signals:
     void connected(Chessboard::RemoteBoard *board);
@@ -63,6 +64,7 @@ signals:
     void gameProgressChanged(const GameProgress& progress);
     void activeColourChanged(Chessboard::Colour colour);
     void gameOver();
+    void gameOptionsChanged(const Chessboard::GameOptions& gameOptions);
 
 public slots:
     virtual void connectToLast();

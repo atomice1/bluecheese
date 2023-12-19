@@ -280,6 +280,7 @@ void DesktopGuiFacade::showNewGameDialog()
     NewGameDialog *newGameDialog = new NewGameDialog(m_mainWindow);
     newGameDialog->setAttribute(Qt::WA_DeleteOnClose);
     newGameDialog->setModal(true);
+    newGameDialog->setGameOptions(m_gameOptions);
     newGameDialog->show();
     connect(newGameDialog, &NewGameDialog::newGameRequested, this,
             [this, newGameDialog](const Chessboard::GameOptions& gameOptions){
@@ -287,4 +288,9 @@ void DesktopGuiFacade::showNewGameDialog()
                     emit requestNewGameOptions(gameOptions);
                     }, Qt::QueuedConnection);
             });
+}
+
+void DesktopGuiFacade::gameOptionsChanged(const Chessboard::GameOptions& gameOptions)
+{
+    m_gameOptions = gameOptions;
 }

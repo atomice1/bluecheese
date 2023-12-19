@@ -50,3 +50,17 @@ NewGameDialog::~NewGameDialog()
 {
     delete ui;
 }
+
+void NewGameDialog::setGameOptions(const Chessboard::GameOptions& gameOptions)
+{
+    ui->whiteAiRadioButton->setChecked(gameOptions.white.playerType == Chessboard::PlayerType::Ai);
+    ui->whiteHumanRadioButton->setChecked(gameOptions.white.playerType == Chessboard::PlayerType::Human);
+    ui->blackAiRadioButton->setChecked(gameOptions.black.playerType == Chessboard::PlayerType::Ai);
+    ui->blackHumanRadioButton->setChecked(gameOptions.black.playerType == Chessboard::PlayerType::Human);
+    ui->whiteOnBoardRadioButton->setChecked(gameOptions.white.playerLocation == Chessboard::PlayerLocation::LocalBoard);
+    ui->whiteInAppRadioButton->setChecked(gameOptions.white.playerLocation == Chessboard::PlayerLocation::LocalApp);
+    ui->blackOnBoardRadioButton->setChecked(gameOptions.black.playerLocation == Chessboard::PlayerLocation::LocalBoard);
+    ui->blackInAppRadioButton->setChecked(gameOptions.black.playerLocation == Chessboard::PlayerLocation::LocalApp);
+    ui->whiteAiDifficultySlider->setValue(gameOptions.white.aiNominalElo);
+    ui->blackAiDifficultySlider->setValue(gameOptions.black.aiNominalElo);
+}

@@ -306,6 +306,7 @@ void ApplicationFacade::requestNewGameOptions(const Chessboard::GameOptions& gam
 {
     qDebug("ApplicationFacade::requestNewGameOptions(...)");
     m_gameOptions = gameOptions;
+    emit gameOptionsChanged(m_gameOptions);
     m_board->requestNewGameOptions(gameOptions);
 }
 

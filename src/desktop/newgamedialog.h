@@ -34,6 +34,8 @@ public:
     explicit NewGameDialog(QWidget *parent = nullptr);
     ~NewGameDialog();
 
+    void setGameOptions(const Chessboard::GameOptions& gameOptions);
+
 signals:
     void newGameRequested(Chessboard::GameOptions gameOptions);
 
