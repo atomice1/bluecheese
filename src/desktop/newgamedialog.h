@@ -16,30 +16,29 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <QRandomGenerator>
-#include "randomaiplayer.h"
+#ifndef NEWGAMEDIALOG_H
+#define NEWGAMEDIALOG_H
 
-RandomAiPlayer::RandomAiPlayer(Chessboard::Colour colour, QObject *parent) :
-    AiPlayer(colour, parent)
-{
+#include <QDialog>
+#include "chessboard.h"
+
+namespace Ui {
+class NewGameDialog;
 }
 
-void RandomAiPlayer::start(const Chessboard::BoardState& state)
+class NewGameDialog : public QDialog
 {
-    qDebug("RandomAiPlayer::start");
-    auto moves = state.legalMoves();
-    auto n = QRandomGenerator::global()->bounded(0, moves.size());
-    emit requestMove(moves.at(n).first.row,
-                     moves.at(n).first.col,
-                     moves.at(n).second.row,
-                     moves.at(n).second.col);
-}
+    Q_OBJECT
 
-void RandomAiPlayer::promotionRequired()
-{
-    emit requestPromotion(Chessboard::Piece::Queen);
-}
+public:
+    explicit NewGameDialog(QWidget *parent = nullptr);
+    ~NewGameDialog();
 
-void RandomAiPlayer::drawRequested()
-{
-}
+signals:
+    void newGameRequested(Chessboard::GameOptions gameOptions);
+
+private:
+    Ui::NewGameDialog *ui;
+};
+
+#endif // NEWGAMEDIALOG_H
