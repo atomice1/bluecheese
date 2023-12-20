@@ -21,6 +21,7 @@ add_library(chessboard-common STATIC
             aicontroller.h
             aiplayer.cpp
             aiplayer.h
+            aiplayerfactory.h
             applicationbase.cpp
             applicationbase.h
             applicationfacade.cpp
@@ -45,7 +46,8 @@ add_library(chessboard-common STATIC
             randomaiplayer.h
             stockfishaiplayer.cpp
             stockfishaiplayer.h
-            version.h)
+            version.h
+            )
 
 target_include_directories(chessboard-common PUBLIC .)
 

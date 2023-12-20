@@ -17,10 +17,10 @@
  */
 
 #include "aicontroller.h"
+#include "aiplayerfactory.h"
 #include "applicationfacade.h"
 #include "commontranslations.h"
 #include "compositeboard.h"
-#include "randomaiplayer.h"
 #include "stockfishaiplayer.h"
 
 using namespace Chessboard;
@@ -34,8 +34,40 @@ namespace {
     const QLatin1String PATH("path");
 }
 
+ApplicationFacade::ApplicationFacade(AiPlayerFactory *aiPlayerFactory, QObject *parent)
+    : QObject{parent}
+{
+    construct(aiPlayerFactory);
+}
+
+class StockfishAiPlayerFactory : public AiPlayerFactory
+{
+public:
+    StockfishAiPlayerFactory(const QString& stockfishPath) :
+        m_stockfishPath(stockfishPath)
+    {
+    }
+    AiPlayer *createAiPlayer(Chessboard::Colour colour, QObject *parent = nullptr)
+    {
+        return new StockfishAiPlayer(colour, m_stockfishPath, parent);
+    }
+private:
+    QString m_stockfishPath;
+};
+
 ApplicationFacade::ApplicationFacade(QObject *parent)
     : QObject{parent}
+{
+    m_settings.beginGroup(STOCKFISH_GROUP);
+    QString stockfishPath = m_settings.value(PATH, QString()).toString();
+    if (stockfishPath.isEmpty())
+        stockfishPath = QLatin1String("/opt/homebrew/bin/stockfish");
+    m_settings.endGroup();
+    StockfishAiPlayerFactory stockfishAiPlayerFactory(stockfishPath);
+    construct(&stockfishAiPlayerFactory);
+}
+
+void ApplicationFacade::construct(AiPlayerFactory *aiPlayerFactory)
 {
     m_boardDiscovery = new BoardDiscovery(this);
     connect(m_boardDiscovery, &BoardDiscovery::finished, this, &ApplicationFacade::discoveryFinished);
@@ -68,16 +100,22 @@ ApplicationFacade::ApplicationFacade(QObject *parent)
     connect(m_board, &CompositeBoard::boardStateChanged, this, [this](const BoardState& state) {
         m_aiController->cancel();
         emit boardStateChanged(state);
-        emit gameProgressChanged(GameProgress(GameProgress::InProgress));
-        emit activeColourChanged(state.activeColour);
+        if (m_gameProgress.state != GameProgress::InProgress)
+            emit gameProgressChanged(GameProgress(GameProgress::InProgress));
+        if (!m_board->isPromotionRequired())
+            emit activeColourChanged(state.activeColour);
     });
     connect(m_board, &CompositeBoard::promotionRequired, this, [this]() {
         if (!isCurrentPlayerAppAi())
             emit promotionRequired();
+        else
+            m_aiController->promotionRequired(m_board->activeColour());
     });
     connect(m_board, &CompositeBoard::drawRequested, this, [this](Colour requestor) {
         if (!isPlayerAppAi(invertColour(requestor)))
             emit drawRequested(requestor);
+        else
+            m_aiController->drawRequested(requestor);
     });
     connect(m_board, &CompositeBoard::resignation, this, [this](Colour colour) {
         emit resignation(colour);
@@ -97,14 +135,9 @@ ApplicationFacade::ApplicationFacade(QObject *parent)
     });
 
     m_aiController = new AiController(this);
-    RandomAiPlayer *whiteAiPlayer = new RandomAiPlayer(Colour::White, this);
+    AiPlayer *whiteAiPlayer = aiPlayerFactory->createAiPlayer(Colour::White, this);
+    AiPlayer *blackAiPlayer = aiPlayerFactory->createAiPlayer(Colour::Black, this);
     m_aiController->setAiPlayer(Colour::White, whiteAiPlayer);
-    m_settings.beginGroup(STOCKFISH_GROUP);
-    QString stockfishPath = m_settings.value(PATH, QString()).toString();
-    if (stockfishPath.isEmpty())
-        stockfishPath = QLatin1String("/opt/homebrew/bin/stockfish");
-    m_settings.endGroup();
-    StockfishAiPlayer *blackAiPlayer = new StockfishAiPlayer(Colour::Black, stockfishPath, this);
     m_aiController->setAiPlayer(Colour::Black, blackAiPlayer);
     connect(this, &ApplicationFacade::activeColourChanged, this, [this](Colour colour) {
             qDebug("activeColourChanged -- do AI");
@@ -115,14 +148,6 @@ ApplicationFacade::ApplicationFacade(QObject *parent)
                     m_aiController->cancel(colour);
             }
         }, Qt::QueuedConnection);
-    connect(this, &ApplicationFacade::promotionRequired, this, [this]() {
-        if (isCurrentPlayerAppAi())
-            m_aiController->promotionRequired(m_board->boardState().activeColour);
-    });
-    connect(this, &ApplicationFacade::drawRequested, this, [this](Colour requestor) {
-        if (isPlayerAppAi(invertColour(requestor)))
-            m_aiController->drawRequested(requestor);
-    });
     connect(this, &ApplicationFacade::gameOver, this, [this]() {
         qDebug("gameOver -- cancel AI");
         m_aiController->cancel();
@@ -337,7 +362,7 @@ void ApplicationFacade::requestPromotion(Chessboard::Piece piece)
 
 bool ApplicationFacade::isCurrentPlayerAppAi() const
 {
-    return isPlayerAppAi(m_board->boardState().activeColour);
+    return isPlayerAppAi(m_board->activeColour());
 }
 
 bool ApplicationFacade::isPlayerAppAi(Colour colour) const
@@ -377,4 +402,12 @@ void ApplicationFacade::aiError(AiPlayer::Error error)
         break;
     }
     emit this->error(errorMessage);
+}
+
+void ApplicationFacade::setGameOptions(const Chessboard::GameOptions& gameOptions)
+{
+    qDebug("ApplicationFacade::setGameOptions(...");
+    m_gameOptions = gameOptions;
+    emit gameOptionsChanged(gameOptions);
+    m_board->setGameOptions(gameOptions);
 }

@@ -43,15 +43,17 @@ void CompositeBoard::setRemoteBoard(Chessboard::RemoteBoard *board)
     if (board) {
         board->setParent(this);
         connect(board, &RemoteBoard::remoteMove, this, [this](int fromRow, int fromCol, int toRow, int toCol) {
+            bool promotion = false;
             bool legal = true;
             if (!m_hasLocalMoves)
-                legal = m_local.move(fromRow, fromCol, toRow, toCol);
+                legal = m_local.move(fromRow, fromCol, toRow, toCol, &promotion);
             emit remoteMove(fromRow, fromCol, toRow, toCol);
             if (!m_hasLocalMoves && legal)
                 emit boardStateChanged(m_local);
             else if (!legal)
                 emit localOutOfSyncWithRemote();
-            checkGameOver();
+            if (!promotion)
+                checkGameOver();
         });
         connect(board, &RemoteBoard::remoteBoardState, this, [this](const BoardState& state) {
             if (!m_hasLocalMoves)
@@ -62,12 +64,14 @@ void CompositeBoard::setRemoteBoard(Chessboard::RemoteBoard *board)
         });
         connect(board, &RemoteBoard::remotePromotion, this, [this](Piece piece) {
             if (!m_hasLocalMoves) {
+                m_promotionRequired = false;
                 bool ok = m_local.promote(piece);
                 emit remotePromotion(piece);
                 if (ok)
                     emit boardStateChanged(m_local);
                 else
                     emit localOutOfSyncWithRemote();
+                checkGameOver();
             }
         });
         connect(board, &RemoteBoard::remoteDraw, this, &CompositeBoard::draw);
@@ -83,6 +87,7 @@ void CompositeBoard::requestMove(int fromRow, int fromCol, int toRow, int toCol)
 {
     qDebug("CompositeBoard::requestMove(%d, %d, %d, %d)", fromRow, fromCol, toRow, toCol);
     m_drawRequested = false;
+    m_promotionRequired = false;
     bool promotion = false;
     bool ok = m_local.move(fromRow, fromCol, toRow, toCol, &promotion);
     if (!ok)
@@ -91,12 +96,15 @@ void CompositeBoard::requestMove(int fromRow, int fromCol, int toRow, int toCol)
         m_remote->requestMove(fromRow, fromCol, toRow, toCol);
     } else {
         m_hasLocalMoves = true;
-        if (promotion)
-            emit promotionRequired();
+    }
+    if (promotion) {
+        m_promotionRequired = true;
+        emit promotionRequired();
     }
     if (ok)
         emit boardStateChanged(m_local);
-    checkGameOver();
+    if (!promotion)
+        checkGameOver();
 }
 
 void CompositeBoard::checkGameOver()
@@ -104,9 +112,11 @@ void CompositeBoard::checkGameOver()
     DrawReason reason = DrawReason::None;
     if (m_local.isCheckmate()) {
         m_drawRequested = false;
+        m_promotionRequired = false;
         emit checkmate((m_local.activeColour == Colour::White) ? Colour::Black : Colour::White);
     } else if (m_local.isAutomaticDraw(&reason)) {
         m_drawRequested = false;
+        m_promotionRequired = false;
         emit draw(reason);
     }
 }
@@ -114,6 +124,7 @@ void CompositeBoard::checkGameOver()
 void CompositeBoard::setBoardState(const Chessboard::BoardState& boardState)
 {
     m_drawRequested = false;
+    m_promotionRequired = false;
     m_local = boardState;
     if (m_remote)
         m_remote->setBoardState(boardState);
@@ -142,6 +153,7 @@ void CompositeBoard::sendLocalBoardState()
 void CompositeBoard::requestNewGame()
 {
     m_drawRequested = false;
+    m_promotionRequired = false;
     m_local = BoardState::newGame();
     if (m_remote)
         m_remote->requestNewGame();
@@ -151,6 +163,7 @@ void CompositeBoard::requestNewGame()
 void CompositeBoard::requestNewGameOptions(const Chessboard::GameOptions& gameOptions)
 {
     m_drawRequested = false;
+    m_promotionRequired = false;
     m_local = BoardState::newGame();
     if (m_remote)
         m_remote->requestNewGame(gameOptions);
@@ -160,6 +173,7 @@ void CompositeBoard::requestNewGameOptions(const Chessboard::GameOptions& gameOp
 void CompositeBoard::requestPromotion(Piece piece)
 {
     m_drawRequested = false;
+    m_promotionRequired = false;
     bool ok = m_local.promote(piece);
     if (m_remote)
         m_remote->requestPromotion(piece);
@@ -193,10 +207,16 @@ void CompositeBoard::requestDraw(Colour requestor)
 void CompositeBoard::requestResignation(Colour requestor)
 {
     m_drawRequested = false;
+    m_promotionRequired = false;
     if (m_remote) {
         m_remote->requestResignation(requestor);
     } else {
         m_hasLocalMoves = true;
         emit resignation(requestor);
     }
+}
+
+void CompositeBoard::setGameOptions(const Chessboard::GameOptions&)
+{
+    qWarning("TODO: CompositeBoard::setGameOptions:");
 }

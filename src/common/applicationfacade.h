@@ -27,6 +27,7 @@
 #include "gameprogress.h"
 
 class AiController;
+class AiPlayerFactory;
 class CompositeBoard;
 
 class ApplicationFacade : public QObject
@@ -34,6 +35,7 @@ class ApplicationFacade : public QObject
     Q_OBJECT
 public:
     explicit ApplicationFacade(QObject *parent = nullptr);
+    explicit ApplicationFacade(AiPlayerFactory *aiPlayerFactory, QObject *parent = nullptr);
     QSettings *settings() { return &m_settings; }
     Chessboard::GameOptions gameOptions() { return m_gameOptions; }
 
@@ -82,6 +84,7 @@ public slots:
     virtual void requestDraw(Chessboard::Colour requestor);
     virtual void requestResignation(Chessboard::Colour requestor);
     virtual void requestPromotion(Chessboard::Piece piece);
+    virtual void setGameOptions(const Chessboard::GameOptions& gameOptions);
 
 protected slots:
     virtual void onConnectionError(Chessboard::ConnectionManager::Error error);
@@ -103,6 +106,7 @@ private:
 
     bool isCurrentPlayerAppAi() const;
     bool isPlayerAppAi(Chessboard::Colour colour) const;
+    void construct(AiPlayerFactory *aiPlayerFactory);
 friend class MockApplicationFacade;
 };
 

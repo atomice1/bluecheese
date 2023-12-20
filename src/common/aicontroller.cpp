@@ -101,7 +101,8 @@ void AiController::drawRequested(Chessboard::Colour colour)
 
 void AiController::promotionRequired(Chessboard::Colour colour)
 {
-    AiPlayer *aiPlayer = this->aiPlayer(invertColour(colour));
+    qDebug("AiController::promotionRequired");
+    AiPlayer *aiPlayer = this->aiPlayer(colour);
     if (aiPlayer) {
         QMetaObject::invokeMethod(aiPlayer, [aiPlayer]() {
                 aiPlayer->promotionRequired();

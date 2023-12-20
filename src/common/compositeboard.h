@@ -27,6 +27,9 @@ class CompositeBoard : public QObject
 public:
     explicit CompositeBoard(QObject *parent = nullptr);
     Chessboard::BoardState boardState() const { return m_local; }
+    bool isPromotionRequired() const { return m_promotionRequired; }
+    bool isDrawRequested() const { return m_drawRequested; }
+    Chessboard::Colour activeColour() const { return m_local.activeColour; }
 public slots:
     void setRemoteBoard(Chessboard::RemoteBoard *board);
     void requestMove(int fromRow, int fromCol, int toRow, int toCol);
@@ -41,6 +44,7 @@ public slots:
     void sendLocalBoardState();
     void requestDraw(Chessboard::Colour requestor);
     void requestResignation(Chessboard::Colour requestor);
+    void setGameOptions(const Chessboard::GameOptions& gameOptions);
 signals:
     void remoteMove(int fromRow, int fromCol, int toRow, int toCol);
     void remotePromotion(Chessboard::Piece piece);
@@ -61,6 +65,7 @@ private:
     Chessboard::RemoteBoard *m_remote {};
     bool m_hasLocalMoves {};
     bool m_drawRequested { false };
+    bool m_promotionRequired { false };
     Chessboard::Colour m_drawRequestor;
 };
 
