@@ -106,6 +106,8 @@ private:
 
     bool isCurrentPlayerAppAi() const;
     bool isPlayerAppAi(Chessboard::Colour colour) const;
+    bool isCurrentPlayerAppHuman() const;
+    bool isPlayerAppHuman(Chessboard::Colour colour) const;
     void construct(AiPlayerFactory *aiPlayerFactory);
 friend class MockApplicationFacade;
 };

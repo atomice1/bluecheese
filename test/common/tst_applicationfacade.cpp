@@ -101,7 +101,6 @@ class PromotionAiPlayerFactory : public AiPlayerFactory
 public:
     AiPlayer *createAiPlayer(Chessboard::Colour colour, QObject *parent = nullptr) override
     {
-        qDebug("Creating a PromotionAiPlayer");
         switch (colour) {
         case Chessboard::Colour::White:
             return new WhitePromotionAiPlayer(colour, parent);
@@ -140,35 +139,93 @@ private slots:
         appFacade.setGameOptions(gameOptions);
         QSignalSpy activeColourChangedSpy(&appFacade, &ApplicationFacade::activeColourChanged);
         QSignalSpy boardStateChangedSpy(&appFacade, &ApplicationFacade::boardStateChanged);
+        QSignalSpy promotionRequiredSpy(&appFacade, &ApplicationFacade::promotionRequired);
         const QString initialState = "3rk3/Pppppppp/8/8/8/8/1PPPPPPP/4K3 w KQkq - 0 1";
         appFacade.setBoardStateFromFen(initialState);
-        bool waitOk = false;
-        bool seenPromotion = false;
-        Chessboard::Colour colour = Chessboard::Colour::White;
-        do {
-            if (colour == Chessboard::Colour::Black) {
-                waitOk = boardStateChangedSpy.wait();
-            } else {
-                waitOk = activeColourChangedSpy.wait();
-            }
-            if (!waitOk)
-                break;
-            while (!activeColourChangedSpy.isEmpty()) {
-                QList<QVariant> arguments = activeColourChangedSpy.takeFirst();
-                colour = arguments.at(0).value<Chessboard::Colour>();
-            }
-            while (!boardStateChangedSpy.isEmpty()) {
-                QList<QVariant> arguments = boardStateChangedSpy.takeFirst();
-                BoardState state = arguments.at(0).value<Chessboard::BoardState>();
-                if (state.activeColour == Colour::White) {
-                    QVERIFY(state[Square::fromAlgebraicString("a8")] != ColouredPiece(Colour::White, Piece::Rook));
-                } else {
-                    QCOMPARE(state[Square::fromAlgebraicString("a8")], ColouredPiece(Colour::White, Piece::Rook));
-                    seenPromotion = true;
-                }
-            }
-        } while (colour != Chessboard::Colour::Black || !seenPromotion);
-        QVERIFY(waitOk);
+        QCOMPARE(boardStateChangedSpy.count(), 1);
+        QList<QVariant> arguments = boardStateChangedSpy.takeFirst();
+        BoardState state = arguments.at(0).value<Chessboard::BoardState>();
+        QCOMPARE(state[Square::fromAlgebraicString("a8")], ColouredPiece::None);
+        activeColourChangedSpy.clear();
+        if (boardStateChangedSpy.isEmpty())
+            QVERIFY(boardStateChangedSpy.wait());
+        arguments = boardStateChangedSpy.takeFirst();
+        state = arguments.at(0).value<Chessboard::BoardState>();
+        QCOMPARE(state[Square::fromAlgebraicString("a8")], ColouredPiece(Colour::White, Piece::Pawn));
+        if (boardStateChangedSpy.isEmpty())
+            QVERIFY(boardStateChangedSpy.wait());
+        arguments = boardStateChangedSpy.takeFirst();
+        state = arguments.at(0).value<Chessboard::BoardState>();
+        QCOMPARE(state[Square::fromAlgebraicString("a8")], ColouredPiece(Colour::White, Piece::Rook));
+        QCOMPARE(activeColourChangedSpy.count(), 1);
+        QCOMPARE(promotionRequiredSpy.count(), 0);
+    }
+    void appHumanPromotion()
+    {
+        MockApplicationFacade appFacade;
+        Chessboard::GameOptions gameOptions;
+        gameOptions.white.playerType = Chessboard::PlayerType::Human;
+        gameOptions.white.playerLocation = Chessboard::PlayerLocation::LocalApp;
+        gameOptions.black.playerType = Chessboard::PlayerType::Human;
+        gameOptions.black.playerLocation = Chessboard::PlayerLocation::LocalApp;
+        appFacade.setGameOptions(gameOptions);
+        QSignalSpy activeColourChangedSpy(&appFacade, &ApplicationFacade::activeColourChanged);
+        QSignalSpy boardStateChangedSpy(&appFacade, &ApplicationFacade::boardStateChanged);
+        QSignalSpy promotionRequiredSpy(&appFacade, &ApplicationFacade::promotionRequired);
+        const QString initialState = "3rk3/Pppppppp/8/8/8/8/1PPPPPPP/4K3 w KQkq - 0 1";
+        appFacade.setBoardStateFromFen(initialState);
+        QList<QVariant> arguments = boardStateChangedSpy.takeFirst();
+        BoardState state = arguments.at(0).value<Chessboard::BoardState>();
+        QCOMPARE(state[Square::fromAlgebraicString("a8")], ColouredPiece::None);
+        activeColourChangedSpy.clear();
+        appFacade.requestMove(6, 0, 7, 0);
+        QCOMPARE(activeColourChangedSpy.count(), 0);
+        QCOMPARE(boardStateChangedSpy.count(), 1);
+        arguments = boardStateChangedSpy.takeFirst();
+        state = arguments.at(0).value<Chessboard::BoardState>();
+        QCOMPARE(state[Square::fromAlgebraicString("a8")], ColouredPiece(Colour::White, Piece::Pawn));
+        QCOMPARE(promotionRequiredSpy.count(), 1);
+        appFacade.requestPromotion(Chessboard::Piece::Rook);
+        QCOMPARE(boardStateChangedSpy.count(), 1);
+        arguments = boardStateChangedSpy.takeFirst();
+        state = arguments.at(0).value<Chessboard::BoardState>();
+        QCOMPARE(state[Square::fromAlgebraicString("a8")], ColouredPiece(Colour::White, Piece::Rook));
+        QCOMPARE(activeColourChangedSpy.count(), 1);
+    }
+    void boardHumanPromotion()
+    {
+        MockApplicationFacade appFacade;
+        AutoDeletePointer<MockRemoteBoard> board = new MockRemoteBoard;
+        emit appFacade.connectionManager()->connected(board);
+        Chessboard::GameOptions gameOptions;
+        gameOptions.white.playerType = Chessboard::PlayerType::Human;
+        gameOptions.white.playerLocation = Chessboard::PlayerLocation::LocalApp;
+        gameOptions.black.playerType = Chessboard::PlayerType::Human;
+        gameOptions.black.playerLocation = Chessboard::PlayerLocation::LocalApp;
+        appFacade.setGameOptions(gameOptions);
+        QSignalSpy activeColourChangedSpy(&appFacade, &ApplicationFacade::activeColourChanged);
+        QSignalSpy boardStateChangedSpy(&appFacade, &ApplicationFacade::boardStateChanged);
+        QSignalSpy promotionRequiredSpy(&appFacade, &ApplicationFacade::promotionRequired);
+        const QString initialState = "3rk3/Pppppppp/8/8/8/8/1PPPPPPP/4K3 w KQkq - 0 1";
+        appFacade.setBoardStateFromFen(initialState);
+        QCOMPARE(boardStateChangedSpy.count(), 1);
+        QList<QVariant> arguments = boardStateChangedSpy.takeFirst();
+        BoardState state = arguments.at(0).value<Chessboard::BoardState>();
+        QCOMPARE(state[Square::fromAlgebraicString("a8")], ColouredPiece::None);
+        activeColourChangedSpy.clear();
+        emit board->remoteMove(6, 0, 7, 0);
+        QCOMPARE(boardStateChangedSpy.count(), 1);
+        arguments = boardStateChangedSpy.takeFirst();
+        state = arguments.at(0).value<Chessboard::BoardState>();
+        QCOMPARE(state[Square::fromAlgebraicString("a8")], ColouredPiece(Colour::White, Piece::Pawn));
+        QCOMPARE(activeColourChangedSpy.count(), 0);
+        QCOMPARE(promotionRequiredSpy.count(), 0);
+        emit board->remotePromotion(Chessboard::Piece::Rook);
+        QCOMPARE(boardStateChangedSpy.count(), 1);
+        arguments = boardStateChangedSpy.takeFirst();
+        state = arguments.at(0).value<Chessboard::BoardState>();
+        QCOMPARE(state[Square::fromAlgebraicString("a8")], ColouredPiece(Colour::White, Piece::Rook));
+        QCOMPARE(activeColourChangedSpy.count(), 1);
     }
 };
 

@@ -106,15 +106,16 @@ void ApplicationFacade::construct(AiPlayerFactory *aiPlayerFactory)
             emit activeColourChanged(state.activeColour);
     });
     connect(m_board, &CompositeBoard::promotionRequired, this, [this]() {
-        if (!isCurrentPlayerAppAi())
+        if (isCurrentPlayerAppHuman())
             emit promotionRequired();
-        else
+        else if (isCurrentPlayerAppAi())
             m_aiController->promotionRequired(m_board->activeColour());
     });
     connect(m_board, &CompositeBoard::drawRequested, this, [this](Colour requestor) {
-        if (!isPlayerAppAi(invertColour(requestor)))
+        Chessboard::Colour invertedColour = invertColour(requestor);
+        if (isPlayerAppHuman(invertedColour))
             emit drawRequested(requestor);
-        else
+        else if (isPlayerAppAi(invertedColour))
             m_aiController->drawRequested(requestor);
     });
     connect(m_board, &CompositeBoard::resignation, this, [this](Colour colour) {
@@ -140,16 +141,14 @@ void ApplicationFacade::construct(AiPlayerFactory *aiPlayerFactory)
     m_aiController->setAiPlayer(Colour::White, whiteAiPlayer);
     m_aiController->setAiPlayer(Colour::Black, blackAiPlayer);
     connect(this, &ApplicationFacade::activeColourChanged, this, [this](Colour colour) {
-            qDebug("activeColourChanged -- do AI");
             if (m_gameProgress.state == GameProgress::InProgress) {
                 if (isCurrentPlayerAppAi())
                     m_aiController->start(colour, m_board->boardState());
                 else
-                    m_aiController->cancel(colour);
+                    m_aiController->cancel();
             }
         }, Qt::QueuedConnection);
     connect(this, &ApplicationFacade::gameOver, this, [this]() {
-        qDebug("gameOver -- cancel AI");
         m_aiController->cancel();
     });
     connect(m_aiController, &AiController::requestMove, this, &ApplicationFacade::requestMove);
@@ -363,6 +362,19 @@ void ApplicationFacade::requestPromotion(Chessboard::Piece piece)
 bool ApplicationFacade::isCurrentPlayerAppAi() const
 {
     return isPlayerAppAi(m_board->activeColour());
+}
+
+bool ApplicationFacade::isPlayerAppHuman(Colour colour) const
+{
+    const PlayerOptions& playerOptions =
+        colour == Colour::Black ? m_gameOptions.black : m_gameOptions.white;
+    return playerOptions.playerType == PlayerType::Human &&
+           playerOptions.playerLocation == PlayerLocation::LocalApp;
+}
+
+bool ApplicationFacade::isCurrentPlayerAppHuman() const
+{
+    return isPlayerAppHuman(m_board->activeColour());
 }
 
 bool ApplicationFacade::isPlayerAppAi(Colour colour) const

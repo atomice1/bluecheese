@@ -48,10 +48,13 @@ void CompositeBoard::setRemoteBoard(Chessboard::RemoteBoard *board)
             if (!m_hasLocalMoves)
                 legal = m_local.move(fromRow, fromCol, toRow, toCol, &promotion);
             emit remoteMove(fromRow, fromCol, toRow, toCol);
-            if (!m_hasLocalMoves && legal)
+            if (!m_hasLocalMoves && legal) {
+                if (promotion)
+                    m_promotionRequired = true;
                 emit boardStateChanged(m_local);
-            else if (!legal)
+            } else if (!legal) {
                 emit localOutOfSyncWithRemote();
+            }
             if (!promotion)
                 checkGameOver();
         });
@@ -97,12 +100,13 @@ void CompositeBoard::requestMove(int fromRow, int fromCol, int toRow, int toCol)
     } else {
         m_hasLocalMoves = true;
     }
-    if (promotion) {
-        m_promotionRequired = true;
-        emit promotionRequired();
-    }
-    if (ok)
+    if (ok) {
+        if (promotion)
+            m_promotionRequired = true;
         emit boardStateChanged(m_local);
+        if (promotion)
+            emit promotionRequired();
+    }
     if (!promotion)
         checkGameOver();
 }
