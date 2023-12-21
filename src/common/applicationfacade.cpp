@@ -140,6 +140,8 @@ void ApplicationFacade::construct(AiPlayerFactory *aiPlayerFactory)
     AiPlayer *blackAiPlayer = aiPlayerFactory->createAiPlayer(Colour::Black, this);
     m_aiController->setAiPlayer(Colour::White, whiteAiPlayer);
     m_aiController->setAiPlayer(Colour::Black, blackAiPlayer);
+    // It is important this connection is queued to allow the game progress to be
+    // updated before the slot is called.
     connect(this, &ApplicationFacade::activeColourChanged, this, [this](Colour colour) {
             if (m_gameProgress.state == GameProgress::InProgress) {
                 if (isCurrentPlayerAppAi())
