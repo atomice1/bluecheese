@@ -21,6 +21,5 @@
 namespace Chessboard {
     GameOptions::GameOptions()
     {
-        black.playerType = PlayerType::Ai;
     }
 }

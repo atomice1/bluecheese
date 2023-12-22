@@ -24,3 +24,11 @@ void AiPlayer::cancel()
         }, Qt::QueuedConnection);
 }
 
+void AiPlayer::drawRequested()
+{
+    emit declineDraw();
+}
+
+void AiPlayer::drawDeclined()
+{
+}

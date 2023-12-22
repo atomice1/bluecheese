@@ -379,6 +379,7 @@ public:
     }
     virtual void requestPromotion(Piece piece);
     virtual void requestDraw(Colour requestor);
+    virtual void declineDraw(Colour declinor);
     virtual void requestResignation(Colour requestor);
     virtual void setBoardState(const BoardState& boardState);
 signals:
@@ -386,6 +387,7 @@ signals:
     void remotePromotion(Chessboard::Piece piece);
     void remoteBoardState(const Chessboard::BoardState& boardState);
     void remoteDrawRequested(Chessboard::Colour requestor);
+    void remoteDrawDeclined(Chessboard::Colour declinor);
     void remoteDraw(Chessboard::DrawReason reason);
     void remoteResignation(Chessboard::Colour colour);
     void remoteCheckmate(Chessboard::Colour winner);

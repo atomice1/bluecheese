@@ -43,6 +43,7 @@ public slots:
     void requestRemoteBoardState();
     void sendLocalBoardState();
     void requestDraw(Chessboard::Colour requestor);
+    void declineDraw(Chessboard::Colour declinor);
     void requestResignation(Chessboard::Colour requestor);
     void setGameOptions(const Chessboard::GameOptions& gameOptions);
 signals:
@@ -51,6 +52,7 @@ signals:
     void remoteBoardState(const Chessboard::BoardState& boardState);
     void promotionRequired();
     void drawRequested(Chessboard::Colour requestor);
+    void drawDeclined(Chessboard::Colour declinor);
     void draw(Chessboard::DrawReason reason);
     void resignation(Chessboard::Colour colour);
     void checkmate(Chessboard::Colour winner);

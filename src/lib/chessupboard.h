@@ -45,6 +45,7 @@ public slots:
     void requestPromotion(Piece piece) override;
     // TODO
     //void requestDraw(Colour requestor);
+    //void declineDraw(Colour requestor);
     //void requestResignation(Colour requestor);
     void setBoardState(const Chessboard::BoardState& boardState) override;
 private slots:

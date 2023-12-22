@@ -35,6 +35,8 @@ void CompositeBoard::setRemoteBoard(Chessboard::RemoteBoard *board)
         disconnect(m_remote, &RemoteBoard::remoteDraw, this, nullptr);
         disconnect(m_remote, &RemoteBoard::remoteCheckmate, this, nullptr);
         disconnect(m_remote, &RemoteBoard::remoteResignation, this, nullptr);
+        disconnect(m_remote, &RemoteBoard::remoteDrawDeclined, this, nullptr);
+        disconnect(m_remote, &RemoteBoard::remoteDrawRequested, this, nullptr);
     }
     auto oldBoard = m_remote;
     m_remote = board;
@@ -80,7 +82,8 @@ void CompositeBoard::setRemoteBoard(Chessboard::RemoteBoard *board)
         connect(board, &RemoteBoard::remoteDraw, this, &CompositeBoard::draw);
         connect(board, &RemoteBoard::remoteCheckmate, this, &CompositeBoard::checkmate);
         connect(board, &RemoteBoard::remoteResignation, this, &CompositeBoard::resignation);
-        connect(board, &RemoteBoard::remoteDrawRequested, this, &CompositeBoard::drawRequested);
+        connect(board, &RemoteBoard::remoteDrawRequested, this, &CompositeBoard::requestDraw);
+        connect(board, &RemoteBoard::remoteDrawDeclined, this, &CompositeBoard::declineDraw);
         if (m_hasLocalMoves)
             emit remoteOutOfSyncWithLocal();
     }
@@ -190,22 +193,34 @@ void CompositeBoard::requestPromotion(Piece piece)
 
 void CompositeBoard::requestDraw(Colour requestor)
 {
+    qDebug("CompositeBoard::requestDraw");
     if (m_remote) {
         m_remote->requestDraw(requestor);
     } else {
         m_hasLocalMoves = true;
-        DrawReason reason = DrawReason::None;
-        if (m_local.isClaimableDraw(&reason)) {
-            m_drawRequested = false;
-            emit draw(reason);
-        } else if (m_drawRequested && m_drawRequestor != requestor) {
-            m_drawRequested = false;
-            emit draw(DrawReason::MutualAgreement);
-        } else {
-            m_drawRequested = true;
-            emit drawRequested(requestor);
-        }
     }
+    DrawReason reason = DrawReason::None;
+    if (m_local.isClaimableDraw(&reason)) {
+        m_drawRequested = false;
+        emit draw(reason);
+    } else if (m_drawRequested && m_drawRequestor != requestor) {
+        m_drawRequested = false;
+        emit draw(DrawReason::MutualAgreement);
+    } else {
+        m_drawRequested = true;
+        emit drawRequested(requestor);
+    }
+}
+
+void CompositeBoard::declineDraw(Colour declinor)
+{
+    m_drawRequested = false;
+    if (m_remote) {
+        m_remote->declineDraw(declinor);
+    } else {
+        m_hasLocalMoves = true;
+    }
+    emit drawDeclined(declinor);
 }
 
 void CompositeBoard::requestResignation(Colour requestor)

@@ -60,7 +60,7 @@ void RemoteBoard::requestNewGame()
 {
 }
 
-void RemoteBoard::requestNewGame(const Chessboard::GameOptions& gameOptions)
+void RemoteBoard::requestNewGame(const Chessboard::GameOptions&)
 {
 }
 
@@ -68,11 +68,15 @@ void RemoteBoard::requestPromotion(Piece)
 {
 }
 
-void RemoteBoard::requestDraw(Colour requestor)
+void RemoteBoard::requestDraw(Colour)
 {
 }
 
-void RemoteBoard::requestResignation(Colour requestor)
+void RemoteBoard::declineDraw(Colour)
+{
+}
+
+void RemoteBoard::requestResignation(Colour)
 {
 }
 

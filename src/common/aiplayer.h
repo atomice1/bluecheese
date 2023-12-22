@@ -44,15 +44,17 @@ public:
 
 signals:
     void requestMove(int fromRow, int fromCol, int toRow, int toCol);
-    void requestDraw(Chessboard::Colour requestor);
-    void requestResignation(Chessboard::Colour requestor) ;
+    void requestDraw();
+    void declineDraw();
+    void requestResignation();
     void requestPromotion(Chessboard::Piece piece);
     void error(Error error);
 
 public slots:
     virtual void start(const Chessboard::BoardState& state) = 0;
     virtual void promotionRequired() = 0;
-    virtual void drawRequested() = 0;
+    virtual void drawRequested();
+    virtual void drawDeclined();
 
 private:
     Chessboard::Colour m_colour;

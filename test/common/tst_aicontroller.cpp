@@ -20,6 +20,7 @@
 #include <QTest>
 
 #include "aicontroller.h"
+#include "aiplayerfactory.h"
 #include "chessboard.h"
 
 class FakeAiPlayer : public AiPlayer
@@ -82,28 +83,69 @@ private:
     int startCallCount {};
 };
 
+class SequentialAiPlayer : public FakeAiPlayer
+{
+    Q_OBJECT
+public:
+    SequentialAiPlayer(Chessboard::Colour colour, QObject *parent = nullptr) :
+        FakeAiPlayer(colour, parent)
+    {
+    }
+    void start(const Chessboard::BoardState& state) override
+    {
+        switch(colour()) {
+        case Chessboard::Colour::White:
+            emit requestMove(1, startCallCount, 2, startCallCount);
+            break;
+        case Chessboard::Colour::Black:
+            emit requestMove(5, startCallCount, 4, startCallCount);
+            break;
+        }
+        startCallCount++;
+    }
+private:
+    int startCallCount {};
+};
+
+template<typename White, typename Black=White>
+class TestAiPlayerFactory : public AiPlayerFactory
+{
+public:
+    AiPlayer *createAiPlayer(Chessboard::Colour colour, QObject *parent = nullptr) override
+    {
+        switch (colour) {
+        case Chessboard::Colour::White:
+            m_whiteAiPlayer = new White(colour, parent);
+            return m_whiteAiPlayer;
+        case Chessboard::Colour::Black:
+            m_blackAiPlayer = new Black(colour, parent);
+            return m_blackAiPlayer;
+        }
+    }
+    White *whiteAiPlayer() const { return m_whiteAiPlayer; }
+    Black *blackAiPlayer() const { return m_blackAiPlayer; }
+private:
+    White *m_whiteAiPlayer {};
+    Black *m_blackAiPlayer {};
+};
+
 class TestAiController: public QObject
 {
     Q_OBJECT
 private slots:
     void hungAiPlayerIsNotDestroyed()
     {
-        std::unique_ptr<AiController> controller(new AiController);
-        std::unique_ptr<QObject> parent(new QObject);
-        AiPlayer *whiteAiPlayer = new HungAiPlayer(Chessboard::Colour::Black, parent.get());
-        AiPlayer *blackAiPlayer = new HungAiPlayer( Chessboard::Colour::White, parent.get());
-        controller->setAiPlayer(Chessboard::Colour::White, whiteAiPlayer);
-        controller->setAiPlayer(Chessboard::Colour::Black, blackAiPlayer);
-        parent.reset();
+        TestAiPlayerFactory<HungAiPlayer> hungAiPlayerFactory;
+        std::unique_ptr<AiController> controller(new AiController(&hungAiPlayerFactory));
         Chessboard::BoardState board = Chessboard::BoardState::newGame();
         QSignalSpy requestMoveSpy(controller.get(), &AiController::requestMove);
         controller->start(Chessboard::Colour::White, board);
         QVERIFY(requestMoveSpy.wait());
-        QThread *thread = whiteAiPlayer->thread();
+        QThread *thread = hungAiPlayerFactory.whiteAiPlayer()->thread();
         QVERIFY(thread != nullptr);
         QSignalSpy threadDestroyedSpy(thread, &QThread::destroyed);
-        QSignalSpy whiteAiPlayerDestroyedSpy(whiteAiPlayer, &AiPlayer::destroyed);
-        QSignalSpy blackAiPlayerDestroyedSpy(blackAiPlayer, &AiPlayer::destroyed);
+        QSignalSpy whiteAiPlayerDestroyedSpy(hungAiPlayerFactory.whiteAiPlayer(), &AiPlayer::destroyed);
+        QSignalSpy blackAiPlayerDestroyedSpy(hungAiPlayerFactory.blackAiPlayer(), &AiPlayer::destroyed);
         controller.reset();
         threadDestroyedSpy.wait(200);
         QCOMPARE(threadDestroyedSpy.count(), 0);
@@ -113,22 +155,17 @@ private slots:
 
     void goodAiPlayerIsDestroyed()
     {
-        std::unique_ptr<AiController> controller(new AiController);
-        std::unique_ptr<QObject> parent(new QObject);
-        AiPlayer *whiteAiPlayer = new FakeAiPlayer(Chessboard::Colour::Black, parent.get());
-        AiPlayer *blackAiPlayer = new FakeAiPlayer(Chessboard::Colour::White, parent.get());
-        controller->setAiPlayer(Chessboard::Colour::White, whiteAiPlayer);
-        controller->setAiPlayer(Chessboard::Colour::Black, blackAiPlayer);
-        parent.reset();
+        TestAiPlayerFactory<FakeAiPlayer> fakeAiPlayerFactory;
+        std::unique_ptr<AiController> controller(new AiController(&fakeAiPlayerFactory));
         Chessboard::BoardState board = Chessboard::BoardState::newGame();
         QSignalSpy requestMoveSpy(controller.get(), &AiController::requestMove);
         controller->start(Chessboard::Colour::White, board);
         QVERIFY(requestMoveSpy.wait());
-        QThread *thread = whiteAiPlayer->thread();
+        QThread *thread = fakeAiPlayerFactory.whiteAiPlayer()->thread();
         QVERIFY(thread != nullptr);
         QSignalSpy threadDestroyedSpy(thread, &QThread::destroyed);
-        QSignalSpy whiteAiPlayerDestroyedSpy(whiteAiPlayer, &AiPlayer::destroyed);
-        QSignalSpy blackAiPlayerDestroyedSpy(blackAiPlayer, &AiPlayer::destroyed);
+        QSignalSpy whiteAiPlayerDestroyedSpy(fakeAiPlayerFactory.whiteAiPlayer(), &AiPlayer::destroyed);
+        QSignalSpy blackAiPlayerDestroyedSpy(fakeAiPlayerFactory.blackAiPlayer(), &AiPlayer::destroyed);
         controller.reset();
         QVERIFY(threadDestroyedSpy.wait());
         QCOMPARE(whiteAiPlayerDestroyedSpy.count(), 1);
@@ -137,13 +174,10 @@ private slots:
 
     void cancelResets()
     {
-        std::unique_ptr<AiController> controller(new AiController);
-        CancelAiPlayer *whiteAiPlayer = new CancelAiPlayer(Chessboard::Colour::Black);
-        CancelAiPlayer *blackAiPlayer = new CancelAiPlayer(Chessboard::Colour::White);
-        controller->setAiPlayer(Chessboard::Colour::White, whiteAiPlayer);
-        controller->setAiPlayer(Chessboard::Colour::Black, blackAiPlayer);
+        TestAiPlayerFactory<CancelAiPlayer> cancelAiPlayerFactory;
+        std::unique_ptr<AiController> controller(new AiController(&cancelAiPlayerFactory));
         Chessboard::BoardState board = Chessboard::BoardState::newGame();
-        QSignalSpy cancelledSpy(whiteAiPlayer, &CancelAiPlayer::cancelled);
+        QSignalSpy cancelledSpy(cancelAiPlayerFactory.whiteAiPlayer(), &CancelAiPlayer::cancelled);
         controller->start(Chessboard::Colour::White, board);
         QCOMPARE(cancelledSpy.count(), 0);
         controller->cancel();
@@ -153,6 +187,38 @@ private slots:
         controller->start(Chessboard::Colour::White, board);
         QVERIFY(requestMoveSpy.wait());
         QCOMPARE(cancelledSpy.count(), 1);
+    }
+
+    // If the main thread calls start / cancel / start, check it does not see
+    // a requestMove from the first start.
+    void cancelIsSerialized()
+    {
+        for (int i=0;i<100;++i) {
+            TestAiPlayerFactory<SequentialAiPlayer> sequentialAiPlayerFactory;
+            std::unique_ptr<AiController> controller(new AiController(&sequentialAiPlayerFactory));
+            QSignalSpy requestMoveSpy(controller.get(), &AiController::requestMove);
+            Chessboard::BoardState board = Chessboard::BoardState::newGame();
+            controller->start(Chessboard::Colour::White, board);
+            controller->cancel();
+            controller->start(Chessboard::Colour::White, board);
+            controller->cancel();
+            controller->start(Chessboard::Colour::White, board);
+            controller->cancel();
+            controller->start(Chessboard::Colour::White, board);
+            if (requestMoveSpy.isEmpty())
+                QVERIFY(requestMoveSpy.wait());
+            QList<QVariant> arguments = requestMoveSpy.takeFirst();
+            QCOMPARE(arguments.at(1).value<int>(), 3);
+            controller->start(Chessboard::Colour::White, board);
+            controller->cancel();
+            controller->start(Chessboard::Colour::White, board);
+            controller->cancel();
+            controller->start(Chessboard::Colour::White, board);
+            if (requestMoveSpy.count() < 2)
+                QVERIFY(requestMoveSpy.wait());
+            arguments = requestMoveSpy.takeFirst();
+            QCOMPARE(arguments.at(1).value<int>(), 6);
+        }
     }
 };
 

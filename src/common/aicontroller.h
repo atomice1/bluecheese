@@ -23,19 +23,20 @@
 #include "aiplayer.h"
 #include "chessboard.h"
 
-class AiPlayer;
+class AiPlayerControllerProxy;
+class AiPlayerFactory;
 
 class AiController : public QObject
 {
     Q_OBJECT
 public:
-    explicit AiController(QObject *parent = nullptr);
+    explicit AiController(AiPlayerFactory *factory, QObject *parent = nullptr);
     ~AiController();
-    void setAiPlayer(Chessboard::Colour colour, AiPlayer *aiPlayer);
 
 signals:
     void requestMove(int fromRow, int fromCol, int toRow, int toCol);
     void requestDraw(Chessboard::Colour requestor);
+    void declineDraw(Chessboard::Colour requestor);
     void requestResignation(Chessboard::Colour requestor);
     void requestPromotion(Chessboard::Piece piece);
     void error(AiPlayer::Error error);
@@ -45,14 +46,16 @@ public slots:
     void cancel();
     void cancel(Chessboard::Colour colour);
     void drawRequested(Chessboard::Colour requestor);
+    void drawDeclined(Chessboard::Colour declinor);
     void promotionRequired(Chessboard::Colour colour);
 
 private:
-    AiPlayer **aiPlayerRef(Chessboard::Colour);
-    AiPlayer *aiPlayer(Chessboard::Colour);
+    AiPlayerControllerProxy *aiPlayer(Chessboard::Colour);
+    void createAiPlayer(Chessboard::Colour colour, AiPlayerFactory *factory, AiPlayerControllerProxy **controllerProxy);
 
     QThread *m_thread;
-    AiPlayer *m_aiPlayer[2] {};
+    AiPlayerControllerProxy *m_whiteAiPlayer;
+    AiPlayerControllerProxy *m_blackAiPlayer;
 };
 
 #endif // AICONTROLLER_H

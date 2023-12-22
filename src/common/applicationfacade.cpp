@@ -118,43 +118,47 @@ void ApplicationFacade::construct(AiPlayerFactory *aiPlayerFactory)
         else if (isPlayerAppAi(invertedColour))
             m_aiController->drawRequested(requestor);
     });
+    connect(m_board, &CompositeBoard::drawDeclined, this, [this](Colour declinor) {
+        Chessboard::Colour invertedColour = invertColour(declinor);
+        if (isPlayerAppHuman(invertedColour)) {
+            emit drawDeclined(declinor);
+        } else if (isPlayerAppAi(invertedColour)) {
+            m_aiController->drawDeclined(declinor);
+        }
+    });
     connect(m_board, &CompositeBoard::resignation, this, [this](Colour colour) {
-        emit resignation(colour);
-        emit gameOver();
         emit gameProgressChanged(GameProgress(GameProgress::Resignation,
                                               (colour == Colour::White) ? Colour::Black : Colour::White));
+        emit gameOver();
+        emit resignation(colour);
     });
     connect(m_board, &CompositeBoard::checkmate, this, [this](Colour colour) {
-        emit checkmate(colour);
-        emit gameOver();
         emit gameProgressChanged(GameProgress(GameProgress::Checkmate, colour));
+        emit gameOver();
+        emit checkmate(colour);
     });
     connect(m_board, &CompositeBoard::draw, this, [this](DrawReason reason) {
-        emit draw(reason);
-        emit gameOver();
         emit gameProgressChanged(GameProgress(GameProgress::Draw, reason));
+        emit gameOver();
+        emit draw(reason);
     });
 
-    m_aiController = new AiController(this);
-    AiPlayer *whiteAiPlayer = aiPlayerFactory->createAiPlayer(Colour::White, this);
-    AiPlayer *blackAiPlayer = aiPlayerFactory->createAiPlayer(Colour::Black, this);
-    m_aiController->setAiPlayer(Colour::White, whiteAiPlayer);
-    m_aiController->setAiPlayer(Colour::Black, blackAiPlayer);
-    // It is important this connection is queued to allow the game progress to be
-    // updated before the slot is called.
-    connect(this, &ApplicationFacade::activeColourChanged, this, [this](Colour colour) {
-            if (m_gameProgress.state == GameProgress::InProgress) {
-                if (isCurrentPlayerAppAi())
-                    m_aiController->start(colour, m_board->boardState());
-                else
-                    m_aiController->cancel();
-            }
-        }, Qt::QueuedConnection);
+    m_aiController = new AiController(aiPlayerFactory, this);
+    // It is important we allow the game progress to be updated before maybe starting the AI engine.
+    connect(this, &ApplicationFacade::activeColourChanged, this, [this](Chessboard::Colour colour) {
+        if (isCurrentPlayerAppAi())
+            QMetaObject::invokeMethod(this, [this, colour]() {
+                    ApplicationFacade::maybeStartAi(colour);
+                }, Qt::QueuedConnection);
+        else
+            m_aiController->cancel();
+    });
     connect(this, &ApplicationFacade::gameOver, this, [this]() {
         m_aiController->cancel();
     });
     connect(m_aiController, &AiController::requestMove, this, &ApplicationFacade::requestMove);
     connect(m_aiController, &AiController::requestDraw, this, &ApplicationFacade::requestDraw);
+    connect(m_aiController, &AiController::declineDraw, this, &ApplicationFacade::declineDraw);
     connect(m_aiController, &AiController::requestResignation, this, &ApplicationFacade::requestResignation);
     connect(m_aiController, &AiController::requestPromotion, this, &ApplicationFacade::requestPromotion);
     connect(m_aiController, &AiController::error, this, &ApplicationFacade::aiError);
@@ -348,6 +352,12 @@ void ApplicationFacade::requestDraw(Chessboard::Colour requestor)
     m_board->requestDraw(requestor);
 }
 
+void ApplicationFacade::declineDraw(Chessboard::Colour declinor)
+{
+    qDebug("ApplicationFacade::declineDraw(%s)", (declinor == Colour::White) ? "white" : "black");
+    m_board->declineDraw(declinor);
+}
+
 void ApplicationFacade::requestResignation(Chessboard::Colour requestor)
 {
     qDebug("ApplicationFacade::requestResignation(%s)", (requestor == Colour::White) ? "white" : "black");
@@ -421,7 +431,18 @@ void ApplicationFacade::aiError(AiPlayer::Error error)
 void ApplicationFacade::setGameOptions(const Chessboard::GameOptions& gameOptions)
 {
     qDebug("ApplicationFacade::setGameOptions(...");
+    bool oldAppAi = isPlayerAppAi(m_board->activeColour());
     m_gameOptions = gameOptions;
-    emit gameOptionsChanged(gameOptions);
     m_board->setGameOptions(gameOptions);
+    emit gameOptionsChanged(gameOptions);
+    if (isPlayerAppAi(m_board->activeColour()) && !oldAppAi)
+        maybeStartAi(m_board->activeColour());
+    else
+        m_aiController->cancel();
+}
+
+void ApplicationFacade::maybeStartAi(Chessboard::Colour colour)
+{
+    if (m_gameProgress.state == GameProgress::InProgress)
+        m_aiController->start(colour, m_board->boardState());
 }

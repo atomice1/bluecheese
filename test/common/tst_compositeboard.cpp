@@ -72,8 +72,8 @@ private slots:
         QCOMPARE(drawRequestedSpy.count(), 1);
         QCOMPARE(drawSpy.count(), 0);
         emit remoteBoard.remoteDrawRequested(Colour::White);
-        QCOMPARE(drawRequestedSpy.count(), 2);
-        QCOMPARE(drawSpy.count(), 0);
+        QCOMPARE(drawRequestedSpy.count(), 1);
+        QCOMPARE(drawSpy.count(), 1);
     }
     void mutualDrawLocalRemote()
     {
@@ -83,11 +83,11 @@ private slots:
         QSignalSpy drawRequestedSpy(&board, &CompositeBoard::drawRequested);
         QSignalSpy drawSpy(&board, &CompositeBoard::draw);
         board.requestDraw(Colour::Black);
-        QCOMPARE(drawRequestedSpy.count(), 0);
+        QCOMPARE(drawRequestedSpy.count(), 1);
         QCOMPARE(drawSpy.count(), 0);
         emit remoteBoard.remoteDrawRequested(Colour::White);
         QCOMPARE(drawRequestedSpy.count(), 1);
-        QCOMPARE(drawSpy.count(), 0);
+        QCOMPARE(drawSpy.count(), 1);
     }
     void mutualDrawRemoteLocal()
     {
@@ -99,9 +99,9 @@ private slots:
         emit remoteBoard.remoteDrawRequested(Colour::Black);
         QCOMPARE(drawRequestedSpy.count(), 1);
         QCOMPARE(drawSpy.count(), 0);
-        remoteBoard.requestDraw(Colour::White);
+        board.requestDraw(Colour::White);
         QCOMPARE(drawRequestedSpy.count(), 1);
-        QCOMPARE(drawSpy.count(), 0);
+        QCOMPARE(drawSpy.count(), 1);
     }
 };
 

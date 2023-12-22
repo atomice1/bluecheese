@@ -151,8 +151,10 @@ void StockfishAiPlayer::start(const Chessboard::BoardState& state)
 
 void StockfishAiPlayer::cancel()
 {
-    if (m_process)
-        sendCommand("stop");
+    QMetaObject::invokeMethod(this, [this]() {
+            if (m_process)
+                sendCommand("stop");
+        }, Qt::QueuedConnection);
 }
 
 void StockfishAiPlayer::promotionRequired()

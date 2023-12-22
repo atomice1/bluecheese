@@ -60,6 +60,7 @@ signals:
     void boardStateChanged(const Chessboard::BoardState& newState);
     void promotionRequired();
     void drawRequested(Chessboard::Colour requestor);
+    void drawDeclined(Chessboard::Colour declinor);
     void draw(Chessboard::DrawReason reason);
     void resignation(Chessboard::Colour colour);
     void checkmate(Chessboard::Colour winner);
@@ -82,6 +83,7 @@ public slots:
     virtual void requestNewGameOptions(const Chessboard::GameOptions& gameOptions);
     virtual void requestMove(int fromRow, int fromCol, int toRow, int toCol);
     virtual void requestDraw(Chessboard::Colour requestor);
+    virtual void declineDraw(Chessboard::Colour declinor);
     virtual void requestResignation(Chessboard::Colour requestor);
     virtual void requestPromotion(Chessboard::Piece piece);
     virtual void setGameOptions(const Chessboard::GameOptions& gameOptions);
@@ -93,6 +95,7 @@ protected slots:
 
 private slots:
     virtual void setLastConnectedAddress(const Chessboard::BoardAddress& address);
+    virtual void maybeStartAi(Chessboard::Colour colour);
 
 private:
     QSettings m_settings;
