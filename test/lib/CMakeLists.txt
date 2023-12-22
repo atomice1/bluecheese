@@ -18,13 +18,11 @@
 find_package(QT NAMES Qt6 REQUIRED COMPONENTS Test)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Test)
 
-enable_testing(true)
-
 add_executable(tst_boardstate
     tst_boardstate.cpp
 
 )
-add_test(NAME boardstate COMMAND tst_boarstate)
+add_test(NAME boardstate COMMAND tst_boardstate)
 
 target_link_libraries(tst_boardstate
     PUBLIC

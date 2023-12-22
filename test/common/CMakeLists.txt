@@ -18,8 +18,6 @@
 find_package(QT NAMES Qt6 REQUIRED COMPONENTS Test)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Test)
 
-enable_testing(true)
-
 add_executable(tst_aicontroller
     tst_aicontroller.cpp
 )

@@ -13,16 +13,21 @@ Command Line
 
 Show addresses of available boards:
 
-  bluecheese --discover
+    bluecheese --discover
 
 Print a new FEN string after every move:
 
-  bluecheese --address ADDRESS --listen
+    bluecheese --address ADDRESS --listen
 
 Send a FEN string to the board:
 
-  bluecheese --address ADDRESS --sendfen FEN
+    bluecheese --address ADDRESS --sendfen FEN
 
 Get a FEN string from the board:
 
-  bluecheese --address ADDRESS --getfen FEN
+    bluecheese --address ADDRESS --getfen FEN
+
+Building
+--------
+
+Requirements: Qt SDK 6.6, cmake 3.14
