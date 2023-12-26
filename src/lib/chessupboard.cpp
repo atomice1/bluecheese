@@ -35,6 +35,7 @@ namespace {
     const uint8_t CMD_GET_STATE       = 0x67;
     const uint8_t CMD_PROMOTION       = 0x97;
     const uint8_t CMD_SEND_MOVE       = 0x99;
+    const uint8_t CMD_WIN             = 0xb6;
     const uint8_t CMD_SETTINGS        = 0xb9;
     const uint8_t RESP_MOVE_OK        = 0x22;
     const uint8_t RESP_PROMOTION_OK   = 0x23;
@@ -44,6 +45,9 @@ namespace {
     const uint8_t RESP_MOVE           = 0xa3;
     const uint8_t RESP_SET_STATE_OK   = 0xb1;
     const uint8_t RESP_TOUCH          = 0xb8;
+    const uint8_t MODE_REMOTE         = 0x02;
+    const uint8_t MODE_AI             = 0x01;
+    const uint8_t MODE_LOCAL          = 0x05;
 }
 
 namespace Chessboard {
@@ -301,8 +305,20 @@ void ChessUpBoard::requestNewGame()
 
 void ChessUpBoard::requestNewGame(const Chessboard::GameOptions& gameOptions)
 {
+    uint8_t buf[] = { 0x05,
+        0x00, // white player type
+        0x01, // white assistance level
+        0x00,
+        0x00, // black player type
+        0x01, // black assistance level
+        0x00,
+        0xff, // hint limit
+        0x00, // white player remote
+        0x00, // black player remote
+    };
+    sendCommand(CMD_SETTINGS, QByteArray::fromRawData(reinterpret_cast<const char *>(buf), sizeof(buf)));
     setBoardState(BoardState::newGame());
-    qWarning("TODO: requestNewGame(...)");
+    setGameOptions(gameOptions);
 }
 
 void ChessUpBoard::requestMove(int fromRow, int fromCol, int toRow, int toCol)
@@ -338,6 +354,50 @@ void ChessUpBoard::requestPromotion(Piece piece)
     }
     sendCommand(CMD_PROMOTION,
                 QByteArray::fromRawData(reinterpret_cast<const char *>(data), sizeof(data)));
+}
+
+void ChessUpBoard::setGameOptions(const Chessboard::GameOptions& gameOptions)
+{
+    uint8_t mode;
+    if (gameOptions.white.playerType == Chessboard::PlayerType::Ai ||
+        gameOptions.black.playerType == Chessboard::PlayerType::Ai) {
+        mode = MODE_AI;
+    } else if (gameOptions.white.playerLocation == Chessboard::PlayerLocation::LocalApp ||
+               gameOptions.black.playerLocation == Chessboard::PlayerLocation::LocalApp) {
+        mode = MODE_REMOTE;
+    } else {
+        mode = MODE_LOCAL;
+    }
+    uint8_t buf[] = {
+        mode,
+        static_cast<uint8_t>((gameOptions.white.playerType == Chessboard::PlayerType::Ai) ? 0x01 : 0x00),
+        static_cast<uint8_t>((gameOptions.white.playerType == Chessboard::PlayerType::Ai) ? 0x12 : 0x01), // white assistance level
+        0x00,
+        static_cast<uint8_t>((gameOptions.black.playerType == Chessboard::PlayerType::Ai) ? 0x01 : 0x00),
+        static_cast<uint8_t>((gameOptions.black.playerType == Chessboard::PlayerType::Ai) ? 0x12 : 0x01), // black assistance level
+        0x00,
+        0xff, // hint limit
+        static_cast<uint8_t>((gameOptions.white.playerType != Chessboard::PlayerType::Ai &&
+                              gameOptions.white.playerLocation == Chessboard::PlayerLocation::LocalApp) ? 0x01 : 0x00), // white player remote?
+        static_cast<uint8_t>((gameOptions.black.playerType != Chessboard::PlayerType::Ai &&
+                              gameOptions.black.playerLocation == Chessboard::PlayerLocation::LocalApp) ? 0x01 : 0x00), // black player remote?
+    };
+    QByteArray payload = QByteArray::fromRawData(reinterpret_cast<const char *>(buf), sizeof(buf));
+    if ((gameOptions.white.playerType == Chessboard::PlayerType::Human &&
+         gameOptions.white.playerLocation == Chessboard::PlayerLocation::LocalBoard) ||
+        (gameOptions.black.playerType == Chessboard::PlayerType::Human &&
+         gameOptions.black.playerLocation == Chessboard::PlayerLocation::LocalBoard)) {
+        payload.append(static_cast<uint8_t>((gameOptions.black.playerType == Chessboard::PlayerType::Human &&
+                                             gameOptions.black.playerLocation == Chessboard::PlayerLocation::LocalBoard) ? 0x01 : 0x00));
+    }
+    sendCommand(CMD_SETTINGS, payload);
+}
+
+void ChessUpBoard::requestResignation(Colour requestor)
+{
+    uint8_t data[1];
+    data[0] = (invertColour(requestor) == Colour::White) ? static_cast<uint8_t>(0x00) : static_cast<uint8_t>(0x01);
+    sendCommand(CMD_WIN, QByteArray::fromRawData(reinterpret_cast<const char *>(data), sizeof(data)));
 }
 
 }

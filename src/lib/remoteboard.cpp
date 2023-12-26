@@ -68,8 +68,9 @@ void RemoteBoard::requestPromotion(Piece)
 {
 }
 
-void RemoteBoard::requestDraw(Colour)
+void RemoteBoard::requestDraw(Colour requestor)
 {
+    emit remoteDrawDeclined(invertColour(requestor));
 }
 
 void RemoteBoard::declineDraw(Colour)
@@ -77,6 +78,10 @@ void RemoteBoard::declineDraw(Colour)
 }
 
 void RemoteBoard::requestResignation(Colour)
+{
+}
+
+void RemoteBoard::setGameOptions(const Chessboard::GameOptions&)
 {
 }
 

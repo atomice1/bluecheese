@@ -43,11 +43,9 @@ public slots:
     void requestNewGame() override;
     void requestNewGame(const Chessboard::GameOptions& gameOptions) override;
     void requestPromotion(Piece piece) override;
-    // TODO
-    //void requestDraw(Colour requestor);
-    //void declineDraw(Colour requestor);
-    //void requestResignation(Colour requestor);
+    void requestResignation(Colour requestor) override;
     void setBoardState(const Chessboard::BoardState& boardState) override;
+    void setGameOptions(const Chessboard::GameOptions& gameOptions) override;
 private slots:
     void readFromBoard(const QByteArray& data);
     void writeToBoard(const QByteArray& data);

@@ -69,6 +69,7 @@ private:
     bool m_drawRequested { false };
     bool m_promotionRequired { false };
     Chessboard::Colour m_drawRequestor;
+    Chessboard::GameOptions m_gameOptions;
 };
 
 #endif // COMPOSITEBOARD_H

@@ -84,6 +84,7 @@ void CompositeBoard::setRemoteBoard(Chessboard::RemoteBoard *board)
         connect(board, &RemoteBoard::remoteResignation, this, &CompositeBoard::resignation);
         connect(board, &RemoteBoard::remoteDrawRequested, this, &CompositeBoard::requestDraw);
         connect(board, &RemoteBoard::remoteDrawDeclined, this, &CompositeBoard::declineDraw);
+        board->setGameOptions(m_gameOptions);
         if (m_hasLocalMoves)
             emit remoteOutOfSyncWithLocal();
     }
@@ -94,24 +95,26 @@ void CompositeBoard::requestMove(int fromRow, int fromCol, int toRow, int toCol)
     qDebug("CompositeBoard::requestMove(%d, %d, %d, %d)", fromRow, fromCol, toRow, toCol);
     m_drawRequested = false;
     m_promotionRequired = false;
-    bool promotion = false;
-    bool ok = m_local.move(fromRow, fromCol, toRow, toCol, &promotion);
-    if (!ok)
-        emit illegalMove(fromRow, fromCol, toRow, toCol);
     if (m_remote) {
         m_remote->requestMove(fromRow, fromCol, toRow, toCol);
     } else {
-        m_hasLocalMoves = true;
+        bool promotion = false;
+        bool ok = m_local.move(fromRow, fromCol, toRow, toCol, &promotion);
+        if (!ok) {
+            emit illegalMove(fromRow, fromCol, toRow, toCol);
+        } else {
+            m_hasLocalMoves = true;
+            if (ok) {
+                if (promotion)
+                    m_promotionRequired = true;
+                emit boardStateChanged(m_local);
+                if (promotion)
+                    emit promotionRequired();
+            }
+            if (!promotion)
+                checkGameOver();
+        }
     }
-    if (ok) {
-        if (promotion)
-            m_promotionRequired = true;
-        emit boardStateChanged(m_local);
-        if (promotion)
-            emit promotionRequired();
-    }
-    if (!promotion)
-        checkGameOver();
 }
 
 void CompositeBoard::checkGameOver()
@@ -172,6 +175,7 @@ void CompositeBoard::requestNewGameOptions(const Chessboard::GameOptions& gameOp
     m_drawRequested = false;
     m_promotionRequired = false;
     m_local = BoardState::newGame();
+    m_gameOptions = gameOptions;
     if (m_remote)
         m_remote->requestNewGame(gameOptions);
     emit boardStateChanged(m_local);
@@ -235,7 +239,9 @@ void CompositeBoard::requestResignation(Colour requestor)
     }
 }
 
-void CompositeBoard::setGameOptions(const Chessboard::GameOptions&)
+void CompositeBoard::setGameOptions(const Chessboard::GameOptions& gameOptions)
 {
-    qWarning("TODO: CompositeBoard::setGameOptions:");
+    m_gameOptions = gameOptions;
+    if (m_remote)
+        m_remote->setGameOptions(gameOptions);
 }

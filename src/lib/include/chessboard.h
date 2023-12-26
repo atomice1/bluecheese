@@ -382,6 +382,7 @@ public:
     virtual void declineDraw(Colour declinor);
     virtual void requestResignation(Colour requestor);
     virtual void setBoardState(const BoardState& boardState);
+    virtual void setGameOptions(const Chessboard::GameOptions& gameOptions);
 signals:
     void remoteMove(int fromRow, int fromCol, int toRow, int toCol);
     void remotePromotion(Chessboard::Piece piece);
