@@ -17,6 +17,7 @@
  */
 
 #include <QFile>
+#include <QThread>
 #include "stockfishaiplayer.h"
 
 namespace {
@@ -48,8 +49,18 @@ StockfishAiPlayer::StockfishAiPlayer(Chessboard::Colour colour, const QString& s
 
 StockfishAiPlayer::~StockfishAiPlayer()
 {
-    if (m_process)
+    if (m_process && m_process->processId() != 0) {
+        QThread *processKillerThread = new QThread;
+        m_process->setParent(nullptr);
+        m_process->moveToThread(processKillerThread);
+        connect(m_process, &QProcess::finished, m_process, &QProcess::deleteLater);
+        connect(m_process, &QProcess::destroyed, processKillerThread, &QThread::deleteLater);
         sendCommand("quit");
+        QProcess *process = m_process;
+        QMetaObject::invokeMethod(m_process, [process]() {
+                process->write("quit\n");
+            }, Qt::QueuedConnection);
+    }
 }
 
 bool StockfishAiPlayer::initialize()
