@@ -298,11 +298,6 @@ void ChessUpBoard::setBoardState(const BoardState& state)
     sendCommand(CMD_SET_STATE, payload);
 }
 
-void ChessUpBoard::requestNewGame()
-{
-    setBoardState(BoardState::newGame());
-}
-
 void ChessUpBoard::requestNewGame(const Chessboard::GameOptions& gameOptions)
 {
     uint8_t buf[] = { 0x05,
@@ -372,10 +367,10 @@ void ChessUpBoard::setGameOptions(const Chessboard::GameOptions& gameOptions)
         mode,
         static_cast<uint8_t>((gameOptions.white.playerType == Chessboard::PlayerType::Ai) ? 0x01 : 0x00),
         static_cast<uint8_t>((gameOptions.white.playerType == Chessboard::PlayerType::Ai) ? 0x12 : 0x01), // white assistance level
-        0x00,
+        0x01,
         static_cast<uint8_t>((gameOptions.black.playerType == Chessboard::PlayerType::Ai) ? 0x01 : 0x00),
         static_cast<uint8_t>((gameOptions.black.playerType == Chessboard::PlayerType::Ai) ? 0x12 : 0x01), // black assistance level
-        0x00,
+        0x01,
         0xff, // hint limit
         static_cast<uint8_t>((gameOptions.white.playerType != Chessboard::PlayerType::Ai &&
                               gameOptions.white.playerLocation == Chessboard::PlayerLocation::LocalApp) ? 0x01 : 0x00), // white player remote?

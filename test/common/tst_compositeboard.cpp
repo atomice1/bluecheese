@@ -29,6 +29,9 @@ class MockRemoteBoard : public RemoteBoard
 public:
     MockRemoteBoard(QObject *parent = nullptr) :
         RemoteBoard(BoardAddress(), parent) {}
+    void requestDraw(Colour)
+    {
+    }
 };
 
 class TestCompositeBoard : public QObject

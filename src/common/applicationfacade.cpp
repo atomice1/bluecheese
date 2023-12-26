@@ -326,18 +326,12 @@ void ApplicationFacade::sendLocalBoardState()
     m_board->sendLocalBoardState();
 }
 
-void ApplicationFacade::requestNewGame()
+void ApplicationFacade::requestNewGame(const Chessboard::GameOptions& gameOptions)
 {
-    qDebug("ApplicationFacade::requestNewGame()");
-    m_board->requestNewGame();
-}
-
-void ApplicationFacade::requestNewGameOptions(const Chessboard::GameOptions& gameOptions)
-{
-    qDebug("ApplicationFacade::requestNewGameOptions(...)");
+    qDebug("ApplicationFacade::requestNewGame(...)");
     m_gameOptions = gameOptions;
     emit gameOptionsChanged(m_gameOptions);
-    m_board->requestNewGameOptions(gameOptions);
+    m_board->requestNewGame(gameOptions);
 }
 
 void ApplicationFacade::requestMove(int fromRow, int fromCol, int toRow, int toCol)

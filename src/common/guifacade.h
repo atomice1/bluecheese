@@ -42,8 +42,7 @@ signals:
     void requestMove(int fromRow, int fromCol, int toRow, int toCol);
     void syncFromLocalToRemote();
     void syncFromRemoteToLocal();
-    void requestNewGame();
-    void requestNewGameOptions(Chessboard::GameOptions gameOptions);
+    void requestNewGame(Chessboard::GameOptions gameOptions);
     void requestPromotion(Chessboard::Piece piece);
     void requestDraw(Chessboard::Colour requestor);
     void requestResignation(Chessboard::Colour requestor);

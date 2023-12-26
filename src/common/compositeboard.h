@@ -38,8 +38,7 @@ public slots:
     }
     void requestPromotion(Chessboard::Piece piece);
     void setBoardState(const Chessboard::BoardState& boardState);
-    void requestNewGame();
-    void requestNewGameOptions(const Chessboard::GameOptions& gameOptions);
+    void requestNewGame(const Chessboard::GameOptions& gameOptions);
     void requestRemoteBoardState();
     void sendLocalBoardState();
     void requestDraw(Chessboard::Colour requestor);

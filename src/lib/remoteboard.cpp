@@ -56,10 +56,6 @@ void RemoteBoard::setBoardState(const BoardState&)
 {
 }
 
-void RemoteBoard::requestNewGame()
-{
-}
-
 void RemoteBoard::requestNewGame(const Chessboard::GameOptions&)
 {
 }

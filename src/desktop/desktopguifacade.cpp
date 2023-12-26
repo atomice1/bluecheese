@@ -37,12 +37,7 @@ DesktopGuiFacade::DesktopGuiFacade(const Options& options, QObject *parent)
     connect(m_mainWindow, &MainWindow::disconnectRequested, this, &GuiFacade::disconnectRequested);
     connect(m_mainWindow, &MainWindow::sendFenRequested, this, &GuiFacade::sendFenRequested);
     connect(m_mainWindow, &MainWindow::requestMove, this, &GuiFacade::requestMove);
-    connect(m_mainWindow, &MainWindow::requestNewGame, this, [this]() {
-        if (m_options.isFeatureEnabled(Options::Feature::Ai))
-            showNewGameDialog();
-        else
-            emit requestNewGame();
-    });
+    connect(m_mainWindow, &MainWindow::requestNewGame, this, &GuiFacade::showNewGameDialog);
     connect(m_mainWindow, &MainWindow::requestEdit, this, &GuiFacade::requestEdit);
     connect(m_mainWindow, &MainWindow::requestDraw, this, [this](){
         emit requestDraw(m_activeColour);
@@ -285,7 +280,7 @@ void DesktopGuiFacade::showNewGameDialog()
     connect(newGameDialog, &NewGameDialog::newGameRequested, this,
             [this, newGameDialog](const Chessboard::GameOptions& gameOptions){
                 QMetaObject::invokeMethod(this, [this, gameOptions]() {
-                    emit requestNewGameOptions(gameOptions);
+                    emit requestNewGame(gameOptions);
                     }, Qt::QueuedConnection);
             });
 }

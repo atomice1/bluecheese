@@ -62,8 +62,7 @@ protected slots:
     virtual void onSyncFromLocalToRemote();
     virtual void onSyncFromRemoteToLocal();
     virtual void onRequestMove(int fromRow, int fromCol, int toRow, int toCol);
-    virtual void onRequestNewGame();
-    virtual void onRequestNewGameOptions(const Chessboard::GameOptions& gameOptions);
+    virtual void onRequestNewGame(const Chessboard::GameOptions& gameOptions);
     virtual void onRequestDraw(Chessboard::Colour requestor);
     virtual void onRequestResignation(Chessboard::Colour requestor);
     virtual void onRequestPromotion(Chessboard::Piece piece);

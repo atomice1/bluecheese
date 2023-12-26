@@ -32,7 +32,9 @@ public:
     MockRemoteBoard(QObject *parent = nullptr) :
         RemoteBoard(BoardAddress(), parent) {
     }
-    ~MockRemoteBoard() {}
+    void requestDraw(Colour)
+    {
+    }
 };
 
 class MockApplicationFacade : public ApplicationFacade

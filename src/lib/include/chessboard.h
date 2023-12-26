@@ -371,7 +371,6 @@ public:
     virtual ~RemoteBoard();
     BoardAddress address() const;
     virtual void requestRemoteBoardState();
-    virtual void requestNewGame();
     virtual void requestNewGame(const GameOptions& gameOptions);
     virtual void requestMove(int fromRow, int fromCol, int toRow, int toCol);
     void requestMove(const Square& from, const Square& to) {

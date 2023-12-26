@@ -79,8 +79,7 @@ public slots:
     virtual void setBoardStateFromFen(const QString& fen);
     virtual void requestRemoteBoardState();
     virtual void sendLocalBoardState();
-    virtual void requestNewGame();
-    virtual void requestNewGameOptions(const Chessboard::GameOptions& gameOptions);
+    virtual void requestNewGame(const Chessboard::GameOptions& gameOptions);
     virtual void requestMove(int fromRow, int fromCol, int toRow, int toCol);
     virtual void requestDraw(Chessboard::Colour requestor);
     virtual void declineDraw(Chessboard::Colour declinor);
