@@ -300,3 +300,8 @@ void DesktopGuiFacade::gameOptionsChanged(const Chessboard::GameOptions& gameOpt
                                  gameOptions.black.playerType == Chessboard::PlayerType::Human &&
                                  gameOptions.black.playerLocation == Chessboard::PlayerLocation::LocalApp);
 }
+
+void DesktopGuiFacade::showBluetoothPermissionDeniedPopup()
+{
+    QMessageBox::warning(m_mainWindow, tr("Bluetooth Permission Denied"), tr("Bluetooth permission denied."));
+}

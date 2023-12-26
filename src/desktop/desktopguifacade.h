@@ -56,6 +56,7 @@ public slots:
     void showIllegalEditPopup(Chessboard::IllegalBoardReason reason) override;
     void showNewGameDialog() override;
     void gameOptionsChanged(const Chessboard::GameOptions& gameOptions) override;
+    void showBluetoothPermissionDeniedPopup() override;
 
 private slots:
     void updateStatusMessage();

@@ -72,6 +72,7 @@ public slots:
     virtual void showIllegalEditPopup(Chessboard::IllegalBoardReason reason) = 0;
     virtual void showNewGameDialog() = 0;
     virtual void gameOptionsChanged(const Chessboard::GameOptions& gameOptions) = 0;
+    virtual void showBluetoothPermissionDeniedPopup() = 0;
 };
 
 #endif // GUIFACADE_H

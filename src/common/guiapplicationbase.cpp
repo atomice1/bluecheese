@@ -16,6 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <QCoreApplication>
+#include <QBluetoothPermission>
 #include "applicationfacade.h"
 #include "commontranslations.h"
 #include "guiapplicationbase.h"
@@ -130,7 +132,20 @@ void GuiApplicationBase::onConnectionFailed()
 
 void GuiApplicationBase::onConnectRequested()
 {
-    facade()->startDiscovery();
+    QBluetoothPermission bluetoothPermission;
+    bluetoothPermission.setCommunicationModes(QBluetoothPermission::Access);
+    switch (qApp->checkPermission(bluetoothPermission)) {
+    case Qt::PermissionStatus::Undetermined:
+        qApp->requestPermission(bluetoothPermission, this,
+                                &GuiApplicationBase::onConnectRequested);
+        break;
+    case Qt::PermissionStatus::Denied:
+        guiFacade()->showBluetoothPermissionDeniedPopup();
+        break;
+    case Qt::PermissionStatus::Granted:
+        facade()->startDiscovery();
+        break;
+    }
 }
 
 void GuiApplicationBase::onDisconnectRequested()
