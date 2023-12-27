@@ -16,12 +16,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <QCoreApplication>
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
+
 #include "aicontroller.h"
 #include "aiplayerfactory.h"
 #include "applicationfacade.h"
 #include "commontranslations.h"
 #include "compositeboard.h"
 #include "stockfishaiplayer.h"
+#include "config.h"
 
 using namespace Chessboard;
 
@@ -61,7 +67,11 @@ ApplicationFacade::ApplicationFacade(QObject *parent)
     m_settings.beginGroup(STOCKFISH_GROUP);
     QString stockfishPath = m_settings.value(PATH, QString()).toString();
     if (stockfishPath.isEmpty())
-        stockfishPath = QLatin1String("/opt/homebrew/bin/stockfish");
+        stockfishPath = QFile::decodeName(DEFAULT_STOCKFISH_PATH);
+    if (stockfishPath == QLatin1String("none"))
+        stockfishPath.clear();
+    else if (QFileInfo(stockfishPath).isRelative())
+        stockfishPath = QFileInfo(QDir(QCoreApplication::applicationDirPath()), stockfishPath).filePath();
     m_settings.endGroup();
     StockfishAiPlayerFactory stockfishAiPlayerFactory(stockfishPath);
     construct(&stockfishAiPlayerFactory);

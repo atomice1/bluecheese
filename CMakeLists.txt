@@ -28,6 +28,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 REQUIRED COMPONENTS Core Bluetooth LinguistTools)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Bluetooth LinguistTools)
 
+set(DEFAULT_STOCKFISH_PATH "" CACHE FILEPATH "Default path to stockfish executable")
+
+if ("${DEFAULT_STOCKFISH_PATH}" STREQUAL "")
+    message(FATAL_ERROR "The AI support in Bluecheese requires the Stockfish engine. You must set DEFAULT_STOCKFISH_PATH to the path to the stockfish executable, or \"none\" to disable AI support.")
+endif()
+
+configure_file(config.h.in config.h)
+include_directories("${CMAKE_BINARY_DIR}")
+
 enable_testing()
 
 add_subdirectory(src)
