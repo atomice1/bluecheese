@@ -161,6 +161,14 @@ private slots:
         QCOMPARE(an.toRow, 7);
         QVERIFY(an.promotion);
         QCOMPARE(an.promotionPiece, Piece::Queen);
+        an = AlgebraicNotation::fromString("b7b8r");
+        QVERIFY(an.isValid());
+        QCOMPARE(an.fromCol, 1);
+        QCOMPARE(an.fromRow, 6);
+        QCOMPARE(an.toCol, 1);
+        QCOMPARE(an.toRow, 7);
+        QVERIFY(an.promotion);
+        QCOMPARE(an.promotionPiece, Piece::Rook);
     }
     void draw()
     {

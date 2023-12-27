@@ -48,6 +48,7 @@ public slots:
     void drawRequested(Chessboard::Colour requestor);
     void drawDeclined(Chessboard::Colour declinor);
     void promotionRequired(Chessboard::Colour colour);
+    void setStrength(Chessboard::Colour colour, int elo);
 
 private:
     AiPlayerControllerProxy *aiPlayer(Chessboard::Colour);

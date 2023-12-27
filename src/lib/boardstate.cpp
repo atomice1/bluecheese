@@ -27,30 +27,35 @@ Piece pieceFromAlgebraicChar(QChar c)
 {
     switch (c.unicode()) {
     case 'K':
+    case 'k':
     case 0x2654:
     case 0x265a:
         return Piece::King;
     case 'Q':
+    case 'q':
     case 0x2655:
     case 0x265b:
         return Piece::Queen;
     case 'R':
+    case 'r':
     case 0x2656:
     case 0x265c:
         return Piece::Rook;
     case 'B':
+    case 'b':
     case 0x2657:
     case 0x265d:
         return Piece::Bishop;
     case 'N':
+    case 'n':
     case 0x2658:
     case 0x265e:
         return Piece::Knight;
     case 'P':
+    case 'p':
     case 0x2659:
     case 0x265f:
     case 'a':
-    case 'b':
     case 'c':
     case 'd':
     case 'e':
@@ -943,7 +948,7 @@ Q_GLOBAL_STATIC(QRegularExpression, algebraicNotationRegExp,
                                  "(?<destFile3>[a-h])?"
                                  "(?<destRank4>[1-8])?)"
                                 "(?<ep> ?e.p.)?"
-                                "(?<promotion>[=/]?\\(?[KQRBN]\\)?)?"
+                                "(?<promotion>[=/]?\\(?[KQRBNkqrbn]\\)?)?"
                               "|O-O|O-O-O|0-0|0-0-0)"
                               "(?<capture5>:)?"
                               "(?<check>\\+)?"

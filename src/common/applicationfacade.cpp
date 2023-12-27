@@ -176,7 +176,16 @@ void ApplicationFacade::construct(AiPlayerFactory *aiPlayerFactory)
     connect(this, &ApplicationFacade::gameProgressChanged, this, [this](GameProgress gameProgress) {
         m_gameProgress = gameProgress;
     });
-
+    connect(this, &ApplicationFacade::gameOptionsChanged, this, [this](const GameOptions& gameOptions) {
+        if (gameOptions.white.playerType == Chessboard::PlayerType::Ai)
+            m_aiController->setStrength(Colour::White, gameOptions.white.aiNominalElo);
+        else
+            m_aiController->setStrength(Colour::White, 1000);
+        if (gameOptions.black.playerType == Chessboard::PlayerType::Ai)
+            m_aiController->setStrength(Colour::Black, gameOptions.black.aiNominalElo);
+        else
+            m_aiController->setStrength(Colour::Black, 1000);
+    });
     m_settings.beginGroup(CONNECTION_GROUP);
     m_lastConnectedAddress = BoardAddress::fromByteArray(m_settings.value(ADDRESS, QByteArray()).toByteArray());
     m_settings.endGroup();

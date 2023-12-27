@@ -14,6 +14,7 @@ public:
     void start(const Chessboard::BoardState& state) override;
     void promotionRequired() override;
     void cancel() override;
+    void setStrength(int elo) override;
 private slots:
     void readyReadFromEngine();
 private:
@@ -24,6 +25,7 @@ private:
 
     QProcess *m_process;
     QString m_stockfishPath;
+    int m_elo { 1000 };
     bool m_initialized {};
     bool m_waitingForResponse {};
 };

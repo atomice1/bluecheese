@@ -65,6 +65,10 @@ public slots:
         m_serial = serial;
         m_aiPlayer->drawDeclined();
     }
+    void setStrength(int elo)
+    {
+        m_aiPlayer->setStrength(elo);
+    }
     void cancel()
     {
         m_aiPlayer->cancel();
@@ -151,6 +155,13 @@ public slots:
         AiPlayerWorkerProxy *worker = m_worker;
         QMetaObject::invokeMethod(worker, [worker, serial]() {
                 worker->drawDeclinedSerial(serial);
+            }, Qt::QueuedConnection);
+    }
+    void setStrength(int elo)
+    {
+        AiPlayerWorkerProxy *worker = m_worker;
+        QMetaObject::invokeMethod(worker, [worker, elo]() {
+                worker->setStrength(elo);
             }, Qt::QueuedConnection);
     }
     void cancel()
@@ -265,6 +276,11 @@ void AiController::drawDeclined(Chessboard::Colour colour)
 void AiController::promotionRequired(Chessboard::Colour colour)
 {
     aiPlayer(colour)->promotionRequired();
+}
+
+void AiController::setStrength(Chessboard::Colour colour, int elo)
+{
+    aiPlayer(colour)->setStrength(elo);
 }
 
 AiPlayerControllerProxy *AiController::aiPlayer(Chessboard::Colour colour)

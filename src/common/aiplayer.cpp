@@ -32,3 +32,7 @@ void AiPlayer::drawRequested()
 void AiPlayer::drawDeclined()
 {
 }
+
+void AiPlayer::setStrength(int)
+{
+}

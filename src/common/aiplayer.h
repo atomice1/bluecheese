@@ -55,6 +55,7 @@ public slots:
     virtual void promotionRequired() = 0;
     virtual void drawRequested();
     virtual void drawDeclined();
+    virtual void setStrength(int elo);
 
 private:
     Chessboard::Colour m_colour;

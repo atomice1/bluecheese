@@ -86,13 +86,18 @@ bool StockfishAiPlayer::initialize()
         emit error(EngineNoBoot);
         return false;
     }
-    //sendCommand("setoption name UCI_LimitStrength value true");
+    sendCommand("setoption name OwnBook value true");
     return true;
 }
 
 void StockfishAiPlayer::sendCommand(const QByteArray& command)
 {
     qDebug("sendCommand: %s", command.constData());
+    if (!m_initialized) {
+        m_initialized = true;
+        if (!initialize())
+            return;
+    }
     Q_ASSERT(m_process);
     m_process->write(command + "\n");
 }
@@ -145,10 +150,6 @@ void StockfishAiPlayer::processResponse(const QByteArray& response)
 
 void StockfishAiPlayer::start(const Chessboard::BoardState& state)
 {
-    if (!m_initialized) {
-        if (!initialize())
-            return;
-    }
     qDebug("StockfishAiPlayer::start");
     sendCommand("isready");
     if (waitForResponse("readyok").isNull())
@@ -157,7 +158,7 @@ void StockfishAiPlayer::start(const Chessboard::BoardState& state)
     sendCommand("isready");
     if (waitForResponse("readyok").isNull())
         return;
-    sendCommand("go movetime 200");
+    sendCommand("go movetime " + QByteArray::number(m_elo * m_elo / 2000));
 }
 
 void StockfishAiPlayer::cancel()
@@ -171,4 +172,11 @@ void StockfishAiPlayer::cancel()
 void StockfishAiPlayer::promotionRequired()
 {
     emit requestPromotion(Chessboard::Piece::Queen);
+}
+
+void StockfishAiPlayer::setStrength(int elo)
+{
+    sendCommand("setoption name UCI_LimitStrength value true");
+    sendCommand("setoption name UCI_Elo value " + QByteArray::number(elo));
+    m_elo = elo;
 }
