@@ -172,7 +172,3 @@ void StockfishAiPlayer::promotionRequired()
 {
     emit requestPromotion(Chessboard::Piece::Queen);
 }
-
-void StockfishAiPlayer::drawRequested()
-{
-}

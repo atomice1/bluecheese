@@ -13,7 +13,6 @@ public:
     ~StockfishAiPlayer();
     void start(const Chessboard::BoardState& state) override;
     void promotionRequired() override;
-    void drawRequested() override;
     void cancel() override;
 private slots:
     void readyReadFromEngine();
