@@ -335,6 +335,7 @@ struct LIBCHESSBOARD_EXPORT BoardState {
     bool isLegal(IllegalBoardReason *reason) const;
     QByteArray key() const;
     QList<QPair<Square, Square> > legalMoves() const;
+    QList<QPair<Square, Square> > sortedLegalMoves() const;
     static BoardState fromFenString(const QString& fen);
     static BoardState newGame();
 private:
@@ -364,6 +365,12 @@ struct GameOptions {
     PlayerOptions black;
 };
 
+enum class AssistanceColour {
+    Red = 0,
+    Blue = 1,
+    Green = 2
+};
+
 class LIBCHESSBOARD_EXPORT RemoteBoard : public QObject {
     Q_OBJECT
 public:
@@ -382,6 +389,7 @@ public:
     virtual void requestResignation(Colour requestor);
     virtual void setBoardState(const BoardState& boardState);
     virtual void setGameOptions(const Chessboard::GameOptions& gameOptions);
+    virtual void sendAssistance(const QList<AssistanceColour>& colours);
 signals:
     void remoteMove(int fromRow, int fromCol, int toRow, int toCol);
     void remotePromotion(Chessboard::Piece piece);

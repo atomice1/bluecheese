@@ -268,3 +268,9 @@ void MainWindow::setLocalPlayer(Chessboard::Colour colour, bool localPlayer)
 {
     m_scene->setLocalPlayer(colour, localPlayer);
 }
+
+void MainWindow::setAssistance(const QList<Chessboard::AssistanceColour>& colours)
+{
+    qDebug("MainWindow::setAssistance");
+    m_scene->setAssistance(colours);
+}

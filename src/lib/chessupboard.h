@@ -45,6 +45,7 @@ public slots:
     void requestResignation(Colour requestor) override;
     void setBoardState(const Chessboard::BoardState& boardState) override;
     void setGameOptions(const Chessboard::GameOptions& gameOptions) override;
+    void sendAssistance(const QList<AssistanceColour>& colours) override;
 private slots:
     void readFromBoard(const QByteArray& data);
     void writeToBoard(const QByteArray& data);

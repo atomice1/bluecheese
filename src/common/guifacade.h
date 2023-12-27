@@ -72,6 +72,7 @@ public slots:
     virtual void showNewGameDialog() = 0;
     virtual void gameOptionsChanged(const Chessboard::GameOptions& gameOptions) = 0;
     virtual void showBluetoothPermissionDeniedPopup() = 0;
+    virtual void assistance(const QList<Chessboard::AssistanceColour>& colours) = 0;
 };
 
 #endif // GUIFACADE_H

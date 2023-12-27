@@ -68,6 +68,7 @@ signals:
     void activeColourChanged(Chessboard::Colour colour);
     void gameOver();
     void gameOptionsChanged(const Chessboard::GameOptions& gameOptions);
+    void assistance(QList<Chessboard::AssistanceColour> colours);
 
 public slots:
     virtual void connectToLast();

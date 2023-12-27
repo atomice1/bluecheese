@@ -17,6 +17,8 @@
  * <https://www.gnu.org/licenses/>.
  */
 
+#include <algorithm>
+
 #include <QRegularExpression>
 
 #include "chessboard.h"
@@ -928,6 +930,31 @@ QList<QPair<Square, Square> > BoardState::legalMoves() const
         }
     }
     return moves;
+}
+
+QList<QPair<Square, Square> > BoardState::sortedLegalMoves() const
+{
+    auto ret = legalMoves();
+    std::sort(ret.begin(), ret.end(), [](const QPair<Square, Square>& a, const QPair<Square, Square>& b) {
+        if (a.first.row < b.first.row)
+            return true;
+        else if (a.first.row > b.first.row)
+            return false;
+        if (a.first.col < b.first.col)
+            return true;
+        else if (a.first.col > b.first.col)
+            return false;
+        if (a.second.row < b.second.row)
+            return true;
+        else if (a.second.row > b.second.row)
+            return false;
+        if (a.second.col < b.second.col)
+            return true;
+        else if (a.second.col > b.second.col)
+            return false;
+        return false;
+    });
+    return ret;
 }
 
 Q_GLOBAL_STATIC(QRegularExpression, algebraicNotationRegExp,

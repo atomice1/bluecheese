@@ -45,6 +45,7 @@ public slots:
     void declineDraw(Chessboard::Colour declinor);
     void requestResignation(Chessboard::Colour requestor);
     void setGameOptions(const Chessboard::GameOptions& gameOptions);
+    void sendAssistance(const QList<Chessboard::AssistanceColour>& colours);
 signals:
     void remoteMove(int fromRow, int fromCol, int toRow, int toCol);
     void remotePromotion(Chessboard::Piece piece);

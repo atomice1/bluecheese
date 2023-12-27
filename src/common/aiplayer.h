@@ -48,6 +48,7 @@ signals:
     void declineDraw();
     void requestResignation();
     void requestPromotion(Chessboard::Piece piece);
+    void assistance(QList<Chessboard::AssistanceColour>& colours);
     void error(Error error);
 
 public slots:
@@ -56,6 +57,7 @@ public slots:
     virtual void drawRequested();
     virtual void drawDeclined();
     virtual void setStrength(int elo);
+    virtual void startAssistance(const Chessboard::BoardState& state);
 
 private:
     Chessboard::Colour m_colour;

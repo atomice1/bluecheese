@@ -235,3 +235,9 @@ void CompositeBoard::setGameOptions(const Chessboard::GameOptions& gameOptions)
     if (m_remote)
         m_remote->setGameOptions(gameOptions);
 }
+
+void CompositeBoard::sendAssistance(const QList<Chessboard::AssistanceColour>& colours)
+{
+    if (m_remote)
+        m_remote->sendAssistance(colours);
+}

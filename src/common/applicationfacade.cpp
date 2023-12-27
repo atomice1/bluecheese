@@ -156,12 +156,10 @@ void ApplicationFacade::construct(AiPlayerFactory *aiPlayerFactory)
     m_aiController = new AiController(aiPlayerFactory, this);
     // It is important we allow the game progress to be updated before maybe starting the AI engine.
     connect(this, &ApplicationFacade::activeColourChanged, this, [this](Chessboard::Colour colour) {
-        if (isCurrentPlayerAppAi())
-            QMetaObject::invokeMethod(this, [this, colour]() {
-                    ApplicationFacade::maybeStartAi(colour);
-                }, Qt::QueuedConnection);
-        else
-            m_aiController->cancel();
+        qDebug("ApplicationFacade::activeColourChanged");
+        QMetaObject::invokeMethod(this, [this, colour]() {
+                ApplicationFacade::maybeStartAi(colour);
+            }, Qt::QueuedConnection);
     });
     connect(this, &ApplicationFacade::gameOver, this, [this]() {
         m_aiController->cancel();
@@ -171,6 +169,11 @@ void ApplicationFacade::construct(AiPlayerFactory *aiPlayerFactory)
     connect(m_aiController, &AiController::declineDraw, this, &ApplicationFacade::declineDraw);
     connect(m_aiController, &AiController::requestResignation, this, &ApplicationFacade::requestResignation);
     connect(m_aiController, &AiController::requestPromotion, this, &ApplicationFacade::requestPromotion);
+    connect(m_aiController, &AiController::assistance, this, [this](const QList<Chessboard::AssistanceColour>& colours) {
+        qDebug("ApplicationFacade::assistance");
+        m_board->sendAssistance(colours);
+        emit assistance(colours);
+    });
     connect(m_aiController, &AiController::error, this, &ApplicationFacade::aiError);
 
     connect(this, &ApplicationFacade::gameProgressChanged, this, [this](GameProgress gameProgress) {
@@ -186,11 +189,16 @@ void ApplicationFacade::construct(AiPlayerFactory *aiPlayerFactory)
         else
             m_aiController->setStrength(Colour::Black, 1000);
     });
+
     m_settings.beginGroup(CONNECTION_GROUP);
     m_lastConnectedAddress = BoardAddress::fromByteArray(m_settings.value(ADDRESS, QByteArray()).toByteArray());
     m_settings.endGroup();
-}
 
+    Chessboard::Colour colour = m_board->activeColour();
+    QMetaObject::invokeMethod(this, [this, colour]() {
+            ApplicationFacade::maybeStartAi(colour);
+        }, Qt::QueuedConnection);
+}
 void ApplicationFacade::connectToLast()
 {
     qDebug("ApplicationFacade::connectToLast()");
@@ -448,14 +456,22 @@ void ApplicationFacade::setGameOptions(const Chessboard::GameOptions& gameOption
     m_gameOptions = gameOptions;
     m_board->setGameOptions(gameOptions);
     emit gameOptionsChanged(gameOptions);
-    if (isPlayerAppAi(m_board->activeColour()) && !oldAppAi)
+    if (isPlayerAppAi(m_board->activeColour()) != oldAppAi)
         maybeStartAi(m_board->activeColour());
-    else
-        m_aiController->cancel();
 }
 
 void ApplicationFacade::maybeStartAi(Chessboard::Colour colour)
 {
-    if (m_gameProgress.state == GameProgress::InProgress)
-        m_aiController->start(colour, m_board->boardState());
+    if (m_gameProgress.state == GameProgress::InProgress) {
+        m_aiController->cancel();
+        if (isPlayerAppAi(colour)) {
+            qDebug("ApplicationFacade::maybeStartAi: start AI");
+            m_aiController->start(colour, m_board->boardState());
+        } else {
+            qDebug("ApplicationFacade::maybeStartAi: start assistance");
+            m_aiController->startAssistance(colour, m_board->boardState());
+        }
+    } else {
+        qDebug("ApplicationFacade::maybeStartAi: game not in progress");
+    }
 }

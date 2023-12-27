@@ -45,6 +45,7 @@ public slots:
     void setGameInProgress(bool flag);
     void setEditMode(bool enabled);
     void setLocalPlayer(Chessboard::Colour color, bool localPlayer);
+    void setAssistance(const QList<Chessboard::AssistanceColour>& colours);
 
 signals:
     void connectRequested();

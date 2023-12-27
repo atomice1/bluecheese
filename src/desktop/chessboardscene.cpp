@@ -27,8 +27,10 @@ namespace {
     qreal BOARD_SIZE = SQUARE_SIZE * 8.0;
     auto FROM_COLOUR = Qt::magenta;
     auto LEGAL_COLOUR = Qt::blue;
-    auto TO_COLOUR = Qt::green;
+    auto TO_COLOUR = Qt::cyan;
     auto CHECK_COLOUR = Qt::red;
+    auto BAD_COLOUR = Qt::red;
+    auto GOOD_COLOUR = Qt::green;
 }
 
 using namespace Chessboard;
@@ -136,7 +138,18 @@ void ChessboardScene::updateSquares()
                 } else if (m_from.isValid() &&
                            !m_to.isValid() &&
                            m_board.isLegalMove(m_from, square)) {
-                    mixColour = LEGAL_COLOUR;
+                    Chessboard::AssistanceColour colour = m_assistance[m_from].value(square, Chessboard::AssistanceColour::Blue);
+                    switch (colour) {
+                    case Chessboard::AssistanceColour::Blue:
+                        mixColour = LEGAL_COLOUR;
+                        break;
+                    case Chessboard::AssistanceColour::Red:
+                        mixColour = BAD_COLOUR;
+                        break;
+                    case Chessboard::AssistanceColour::Green:
+                        mixColour = GOOD_COLOUR;
+                        break;
+                    }
                 }
             }
             QColor colour;
@@ -157,6 +170,7 @@ void ChessboardScene::updateSquares()
 void ChessboardScene::setBoardState(const Chessboard::BoardState& newState)
 {
     m_board = newState;
+    m_assistance.clear();
     update();
     updateSquares();
 }
@@ -253,4 +267,16 @@ void ChessboardScene::setLocalPlayer(Chessboard::Colour colour, bool localPlayer
         m_localPlayer[1] = localPlayer;
         break;
     }
+}
+
+void ChessboardScene::setAssistance(const QList<Chessboard::AssistanceColour>& colours)
+{
+    qDebug("ChessboardScene::setAssistance");
+    QList<QPair<Square, Square> > legalMoves = m_board.sortedLegalMoves();
+    if (legalMoves.size() != colours.size())
+        qWarning("Assistance colours array size does not match legal moves array size");
+    for (int i=0;i<std::min(legalMoves.size(), colours.size());++i)
+        m_assistance[legalMoves[i].first][legalMoves[i].second] = colours[i];
+    update();
+    updateSquares();
 }

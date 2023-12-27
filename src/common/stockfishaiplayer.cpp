@@ -139,18 +139,37 @@ QByteArray StockfishAiPlayer::waitForResponse(const QByteArray& response)
 void StockfishAiPlayer::processResponse(const QByteArray& response)
 {
     qDebug("processResponse: %s", response.constData());
-    if (section(response, 0) == "bestmove") {
+    QByteArray command = section(response, 0);
+    if (command == "bestmove") {
         QByteArray move = section(response, 1);
-        Chessboard::AlgebraicNotation an = Chessboard::AlgebraicNotation::fromString(QString::fromLatin1(move));
-        emit requestMove(an.fromRow, an.fromCol, an.toRow, an.toCol);
-        if (an.promotion)
-            emit requestPromotion(an.promotionPiece);
+        if (m_assistanceMode) {
+            if (m_currentMove.isEmpty())
+                m_bestMove = move.left(4);
+            nextAssistance();
+        } else {
+            Chessboard::AlgebraicNotation an = Chessboard::AlgebraicNotation::fromString(QString::fromLatin1(move));
+            emit requestMove(an.fromRow, an.fromCol, an.toRow, an.toCol);
+            if (an.promotion)
+                emit requestPromotion(an.promotionPiece);
+        }
+    } else if (command == "info" && m_assistanceMode) {
+        QList<QByteArray> infos = response.split(' ');
+        int index = infos.indexOf("score");
+        if (index != -1) {
+            if (infos[index + 1] == "mate")
+                m_currentScore = infos[index + 2].toInt() * 10000;
+            else
+                m_currentScore = infos[index + 2].toInt();
+            qDebug("score: %d", m_currentScore);
+        }
     }
 }
 
 void StockfishAiPlayer::start(const Chessboard::BoardState& state)
 {
     qDebug("StockfishAiPlayer::start");
+    m_assistanceMode = false;
+    sendCommand("stop");
     sendCommand("isready");
     if (waitForResponse("readyok").isNull())
         return;
@@ -179,4 +198,44 @@ void StockfishAiPlayer::setStrength(int elo)
     sendCommand("setoption name UCI_LimitStrength value true");
     sendCommand("setoption name UCI_Elo value " + QByteArray::number(elo));
     m_elo = elo;
+}
+
+void StockfishAiPlayer::startAssistance(const Chessboard::BoardState& state)
+{
+    qDebug("StockfishAiPlayer::startAssistance");
+    sendCommand("stop");
+    m_assistanceMode = true;
+    m_board = state;
+    m_sortedMoves = state.sortedLegalMoves();
+    m_timePerMove = 400 / m_sortedMoves.size();
+    m_currentMove.clear();
+    sendCommand("position fen " + m_board.toFenString().toLatin1());
+    sendCommand("go movetime " + QByteArray::number(m_timePerMove));
+}
+
+void StockfishAiPlayer::nextAssistance()
+{
+    if (!m_currentMove.isEmpty()) {
+        if (m_currentMove == m_bestMove) {
+            m_assistanceColours.append(Chessboard::AssistanceColour::Green);
+        } else if (m_currentScore >= -100) {
+            m_assistanceColours.append(Chessboard::AssistanceColour::Blue);
+        } else {
+            m_assistanceColours.append(Chessboard::AssistanceColour::Red);
+        }
+    }
+    if (m_sortedMoves.isEmpty()) {
+        if (!m_assistanceColours.isEmpty())
+            emit assistance(m_assistanceColours);
+        m_assistanceColours.clear();
+        return;
+    }
+    QPair<Chessboard::Square, Chessboard::Square> move = m_sortedMoves.takeFirst();
+    m_currentMove = move.first.toString().toLatin1() + move.second.toString().toLatin1();
+    if (m_currentMove == m_bestMove) {
+        nextAssistance();
+    } else {
+        sendCommand("position fen " + m_board.toFenString().toLatin1());
+        sendCommand("go movetime " + QByteArray::number(m_timePerMove) + " searchmoves " + m_currentMove);
+    }
 }

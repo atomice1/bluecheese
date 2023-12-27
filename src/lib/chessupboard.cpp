@@ -17,6 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  */
 
+#include <QBitArray>
 #include <QCoreApplication>
 #include <QThread>
 #include <QTimer>
@@ -29,6 +30,7 @@ namespace {
     const QLatin1String RX_CHARACTERISTIC_UUID("{6E400002-B5A3-F393-E0A9-E50E24DCCA9E}");
     const QLatin1String TX_CHARACTERISTIC_UUID("{6E400003-B5A3-F393-E0A9-E50E24DCCA9E}");
 
+    const uint8_t CMD_ASSISTANCE      = 0x10;
     const uint8_t CMD_OK              = 0x21;
     const uint8_t CMD_PROMOTION_OK    = 0x23;
     const uint8_t CMD_SET_STATE       = 0x66;
@@ -200,10 +202,10 @@ void ChessUpBoard::sendInit()
     requestRemoteBoardState();
     uint8_t buf[] = { 0x05,
                       0x00, // white player type
-                      0x01, // white assistance level
+                      0x06, // white assistance level
                       0x00,
                       0x00, // black player type
-                      0x01, // black assistance level
+                      0x06, // black assistance level
                       0x00,
                       0xff, // hint limit
                       0x00, // white player remote
@@ -302,10 +304,10 @@ void ChessUpBoard::requestNewGame(const Chessboard::GameOptions& gameOptions)
 {
     uint8_t buf[] = { 0x05,
         0x00, // white player type
-        0x01, // white assistance level
+        0x06, // white assistance level
         0x00,
         0x00, // black player type
-        0x01, // black assistance level
+        0x06, // black assistance level
         0x00,
         0xff, // hint limit
         0x00, // white player remote
@@ -366,10 +368,10 @@ void ChessUpBoard::setGameOptions(const Chessboard::GameOptions& gameOptions)
     uint8_t buf[] = {
         mode,
         static_cast<uint8_t>((gameOptions.white.playerType == Chessboard::PlayerType::Ai) ? 0x01 : 0x00),
-        static_cast<uint8_t>((gameOptions.white.playerType == Chessboard::PlayerType::Ai) ? 0x12 : 0x01), // white assistance level
+        static_cast<uint8_t>((gameOptions.white.playerType == Chessboard::PlayerType::Ai) ? 0x12 : 0x05), // white assistance level
         0x01,
         static_cast<uint8_t>((gameOptions.black.playerType == Chessboard::PlayerType::Ai) ? 0x01 : 0x00),
-        static_cast<uint8_t>((gameOptions.black.playerType == Chessboard::PlayerType::Ai) ? 0x12 : 0x01), // black assistance level
+        static_cast<uint8_t>((gameOptions.black.playerType == Chessboard::PlayerType::Ai) ? 0x12 : 0x05), // black assistance level
         0x01,
         0xff, // hint limit
         static_cast<uint8_t>((gameOptions.white.playerType != Chessboard::PlayerType::Ai &&
@@ -393,6 +395,30 @@ void ChessUpBoard::requestResignation(Colour requestor)
     uint8_t data[1];
     data[0] = (invertColour(requestor) == Colour::White) ? static_cast<uint8_t>(0x00) : static_cast<uint8_t>(0x01);
     sendCommand(CMD_WIN, QByteArray::fromRawData(reinterpret_cast<const char *>(data), sizeof(data)));
+}
+
+void ChessUpBoard::sendAssistance(const QList<AssistanceColour>& colours)
+{
+    QBitArray bits(2 * colours.size());
+    for (int i=0;i<colours.size();++i) {
+        int byte = i / 4;
+        int bit = byte * 8 + (3-(i % 4)) * 2;
+        switch (colours[i]) {
+        case Chessboard::AssistanceColour::Red:
+            break;
+        case Chessboard::AssistanceColour::Blue:
+            bits.setBit(bit, 1);
+            break;
+        case Chessboard::AssistanceColour::Green:
+            bits.setBit(bit + 1, 1);
+            break;
+        }
+    }
+    QByteArray data;
+    data.reserve(1 + colours.size() + 3 / 4);
+    data.append(static_cast<uint8_t>(colours.size()));
+    data.append(QByteArray::fromRawData(bits.bits(), (bits.size() + 7) / 8));
+    sendCommand(CMD_ASSISTANCE, data);
 }
 
 }

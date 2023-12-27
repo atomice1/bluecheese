@@ -36,3 +36,7 @@ void AiPlayer::drawDeclined()
 void AiPlayer::setStrength(int)
 {
 }
+
+void AiPlayer::startAssistance(const Chessboard::BoardState&)
+{
+}

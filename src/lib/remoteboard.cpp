@@ -81,4 +81,8 @@ void RemoteBoard::setGameOptions(const Chessboard::GameOptions&)
 {
 }
 
+void RemoteBoard::sendAssistance(const QList<AssistanceColour>&)
+{
+}
+
 }

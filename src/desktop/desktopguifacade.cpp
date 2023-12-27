@@ -300,3 +300,9 @@ void DesktopGuiFacade::showBluetoothPermissionDeniedPopup()
 {
     QMessageBox::warning(m_mainWindow, tr("Bluetooth Permission Denied"), tr("Bluetooth permission denied."));
 }
+
+void DesktopGuiFacade::assistance(const QList<Chessboard::AssistanceColour>& colours)
+{
+    qDebug("DesktopGuiFacade::assistance");
+    m_mainWindow->setAssistance(colours);
+}

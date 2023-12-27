@@ -33,7 +33,6 @@ public:
     explicit ChessboardScene(QObject *parent = nullptr);
     Chessboard::BoardState boardState() const;
     Chessboard::Square selectedSquare() const;
-    void setLocalPlayer(Chessboard::Colour colour, bool localPlayer);
 
 signals:
     void squareSelected(int row, int col);
@@ -43,6 +42,8 @@ public slots:
     void setBoardState(const Chessboard::BoardState& newState);
     void setGameInProgress(bool flag);
     void setEditMode(bool enabled);
+    void setLocalPlayer(Chessboard::Colour colour, bool localPlayer);
+    void setAssistance(const QList<Chessboard::AssistanceColour>& colours);
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent) override;
@@ -59,6 +60,7 @@ private:
     Chessboard::BoardState m_board;
     QFont m_font;
     Chessboard::Square m_from, m_to;
+    QMap<Chessboard::Square, QMap<Chessboard::Square, Chessboard::AssistanceColour> > m_assistance;
     bool m_gameInProgress { true };
     bool m_editMode { false };
     bool m_localPlayer[2] {};

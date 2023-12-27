@@ -45,6 +45,7 @@ GuiApplicationBase::GuiApplicationBase(GuiFacade *guiFacade_, const Options &opt
     connect(facade(), &ApplicationFacade::activeColourChanged, this, &GuiApplicationBase::onActiveColourChanged);
     connect(facade(), &ApplicationFacade::promotionRequired, this, &GuiApplicationBase::onPromotionRequired);
     connect(facade(), &ApplicationFacade::gameOptionsChanged, guiFacade(), &GuiFacade::gameOptionsChanged);
+    connect(facade(), &ApplicationFacade::assistance, guiFacade(), &GuiFacade::assistance);
     connect(guiFacade(), &GuiFacade::connectRequested, this, &GuiApplicationBase::onConnectRequested);
     connect(guiFacade(), &GuiFacade::disconnectRequested, this, &GuiApplicationBase::onDisconnectRequested);
     connect(guiFacade(), &GuiFacade::cancelConnect, this, &GuiApplicationBase::onCancelConnect);

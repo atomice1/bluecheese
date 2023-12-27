@@ -35,6 +35,7 @@ public:
         connect(m_aiPlayer, &AiPlayer::declineDraw, this, &AiPlayerWorkerProxy::declineDraw);
         connect(m_aiPlayer, &AiPlayer::requestResignation, this, &AiPlayerWorkerProxy::requestResignation);
         connect(m_aiPlayer, &AiPlayer::requestPromotion, this, &AiPlayerWorkerProxy::requestPromotion);
+        connect(m_aiPlayer, &AiPlayer::assistance, this, &AiPlayerWorkerProxy::assistance);
         connect(m_aiPlayer, &AiPlayer::error, this, &AiPlayerWorkerProxy::error);
     }
 signals:
@@ -43,6 +44,7 @@ signals:
     void declineDrawSerial(long serial);
     void requestResignationSerial(long serial);
     void requestPromotionSerial(long serial, Chessboard::Piece piece);
+    void assistanceSerial(long serial, QList<Chessboard::AssistanceColour> colours);
     void error(AiPlayer::Error error);
 public slots:
     void startSerial(long serial, const Chessboard::BoardState& state)
@@ -69,6 +71,11 @@ public slots:
     {
         m_aiPlayer->setStrength(elo);
     }
+    void startAssistanceSerial(long serial, const Chessboard::BoardState& state)
+    {
+        m_serial = serial;
+        m_aiPlayer->startAssistance(state);
+    }
     void cancel()
     {
         m_aiPlayer->cancel();
@@ -94,6 +101,10 @@ private slots:
     {
         emit requestPromotionSerial(m_serial, piece);
     }
+    void assistance(const QList<Chessboard::AssistanceColour>& colours)
+    {
+        emit assistanceSerial(m_serial, colours);
+    }
 private:
     AiPlayer *m_aiPlayer;
     long m_serial {};
@@ -112,6 +123,7 @@ public:
         connect(m_worker, &AiPlayerWorkerProxy::declineDrawSerial, this, &AiPlayerControllerProxy::declineDrawSerial, Qt::QueuedConnection);
         connect(m_worker, &AiPlayerWorkerProxy::requestResignationSerial, this, &AiPlayerControllerProxy::requestResignationSerial, Qt::QueuedConnection);
         connect(m_worker, &AiPlayerWorkerProxy::requestPromotionSerial, this, &AiPlayerControllerProxy::requestPromotionSerial, Qt::QueuedConnection);
+        connect(m_worker, &AiPlayerWorkerProxy::assistanceSerial, this, &AiPlayerControllerProxy::assistanceSerial, Qt::QueuedConnection);
         connect(m_worker, &AiPlayerWorkerProxy::error, this, &AiPlayerControllerProxy::error, Qt::QueuedConnection);
         connect(this, &QObject::destroyed, m_worker, &QObject::deleteLater);
     }
@@ -122,6 +134,7 @@ signals:
     void declineDraw();
     void requestResignation();
     void requestPromotion(Chessboard::Piece piece);
+    void assistance(QList<Chessboard::AssistanceColour> colours);
     void error(AiPlayer::Error error);
 
 public slots:
@@ -164,6 +177,14 @@ public slots:
                 worker->setStrength(elo);
             }, Qt::QueuedConnection);
     }
+    void startAssistance(const Chessboard::BoardState& state)
+    {
+        long serial = ++m_serial;
+        AiPlayerWorkerProxy *worker = m_worker;
+        QMetaObject::invokeMethod(worker, [worker, serial, state]() {
+                worker->startAssistanceSerial(serial, state);
+            }, Qt::QueuedConnection);
+    }
     void cancel()
     {
         m_worker->cancel();
@@ -194,6 +215,11 @@ private slots:
     {
         if (serial == m_serial)
             emit requestPromotion(piece);
+    }
+    void assistanceSerial(long serial, const QList<Chessboard::AssistanceColour>& colours)
+    {
+        if (serial == m_serial)
+            emit assistance(colours);
     }
 
 private:
@@ -243,6 +269,7 @@ void AiController::createAiPlayer(Chessboard::Colour colour, AiPlayerFactory *fa
         emit requestResignation(colour);
     });
     connect(*controllerProxy, &AiPlayerControllerProxy::requestPromotion, this, &AiController::requestPromotion);
+    connect(*controllerProxy, &AiPlayerControllerProxy::assistance, this, &AiController::assistance);
     connect(*controllerProxy, &AiPlayerControllerProxy::error, this, &AiController::error);
     workerProxy->moveToThread(m_thread);
 }
@@ -281,6 +308,11 @@ void AiController::promotionRequired(Chessboard::Colour colour)
 void AiController::setStrength(Chessboard::Colour colour, int elo)
 {
     aiPlayer(colour)->setStrength(elo);
+}
+
+void AiController::startAssistance(Chessboard::Colour colour, const Chessboard::BoardState& state)
+{
+    aiPlayer(colour)->startAssistance(state);
 }
 
 AiPlayerControllerProxy *AiController::aiPlayer(Chessboard::Colour colour)
