@@ -37,6 +37,10 @@ void AiPlayer::setStrength(int)
 {
 }
 
+void AiPlayer::setAssistanceLevel(int)
+{
+}
+
 void AiPlayer::startAssistance(const Chessboard::BoardState&)
 {
 }

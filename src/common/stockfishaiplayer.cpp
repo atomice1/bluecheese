@@ -200,10 +200,17 @@ void StockfishAiPlayer::setStrength(int elo)
     m_elo = elo;
 }
 
+void StockfishAiPlayer::setAssistanceLevel(int level)
+{
+    m_assistanceLevel = level;
+}
+
 void StockfishAiPlayer::startAssistance(const Chessboard::BoardState& state)
 {
-    qDebug("StockfishAiPlayer::startAssistance");
+    qDebug("StockfishAiPlayer::startAssistance -- level = %d", m_assistanceLevel);
     sendCommand("stop");
+    if (m_assistanceLevel == 1)
+        return;
     m_assistanceMode = true;
     m_board = state;
     m_sortedMoves = state.sortedLegalMoves();
@@ -213,15 +220,28 @@ void StockfishAiPlayer::startAssistance(const Chessboard::BoardState& state)
     sendCommand("go movetime " + QByteArray::number(m_timePerMove));
 }
 
+// Assistance thresholds in centipawns relative to initial position.
+// 2: red = <= -300 cp; green >= -299 cp
+// 3: red = <= -300 cp; green >= -100 cp
+// 4: red = <= -300 cp; green >= 0 cp
+// 5: red = <= -100 cp; green >= 300 cp
+// 6: red = <=  -1 cp;  green = best move only
+namespace {
+    int redThreshold[] =   { 0, -300, -300, -300, -100, -1 };
+    int greenThreshold[] = { 0, -299, -100, 0,    300,  0 };
+}
+
 void StockfishAiPlayer::nextAssistance()
 {
     if (!m_currentMove.isEmpty()) {
         if (m_currentMove == m_bestMove) {
             m_assistanceColours.append(Chessboard::AssistanceColour::Green);
-        } else if (m_currentScore >= -100) {
-            m_assistanceColours.append(Chessboard::AssistanceColour::Blue);
-        } else {
+        } else if (m_assistanceLevel != 6 && m_currentScore >= greenThreshold[m_assistanceLevel - 1]) {
+            m_assistanceColours.append(Chessboard::AssistanceColour::Green);
+        } else if (m_currentScore <= redThreshold[m_assistanceLevel - 1]) {
             m_assistanceColours.append(Chessboard::AssistanceColour::Red);
+        } else {
+            m_assistanceColours.append(Chessboard::AssistanceColour::Blue);
         }
     }
     if (m_sortedMoves.isEmpty()) {

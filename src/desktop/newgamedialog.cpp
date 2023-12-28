@@ -42,6 +42,8 @@ NewGameDialog::NewGameDialog(QWidget *parent)
                 ui->blackOnBoardRadioButton->isChecked() ? Chessboard::PlayerLocation::LocalBoard : Chessboard::PlayerLocation::LocalApp;
         gameOptions.white.aiNominalElo = ui->whiteAiDifficultySlider->value();
         gameOptions.black.aiNominalElo = ui->blackAiDifficultySlider->value();
+        gameOptions.white.assistanceLevel = ui->whiteAssistanceLevelSlider->value();
+        gameOptions.black.assistanceLevel = ui->blackAssistanceLevelSlider->value();
         emit newGameRequested(gameOptions);
     });
 }
@@ -63,4 +65,6 @@ void NewGameDialog::setGameOptions(const Chessboard::GameOptions& gameOptions)
     ui->blackInAppRadioButton->setChecked(gameOptions.black.playerLocation == Chessboard::PlayerLocation::LocalApp);
     ui->whiteAiDifficultySlider->setValue(gameOptions.white.aiNominalElo);
     ui->blackAiDifficultySlider->setValue(gameOptions.black.aiNominalElo);
+    ui->whiteAssistanceLevelSlider->setValue(gameOptions.white.assistanceLevel);
+    ui->blackAssistanceLevelSlider->setValue(gameOptions.black.assistanceLevel);
 }

@@ -71,6 +71,10 @@ public slots:
     {
         m_aiPlayer->setStrength(elo);
     }
+    void setAssistanceLevel(int level)
+    {
+        m_aiPlayer->setAssistanceLevel(level);
+    }
     void startAssistanceSerial(long serial, const Chessboard::BoardState& state)
     {
         m_serial = serial;
@@ -175,6 +179,13 @@ public slots:
         AiPlayerWorkerProxy *worker = m_worker;
         QMetaObject::invokeMethod(worker, [worker, elo]() {
                 worker->setStrength(elo);
+            }, Qt::QueuedConnection);
+    }
+    void setAssistanceLevel(int level)
+    {
+        AiPlayerWorkerProxy *worker = m_worker;
+        QMetaObject::invokeMethod(worker, [worker, level]() {
+                worker->setAssistanceLevel(level);
             }, Qt::QueuedConnection);
     }
     void startAssistance(const Chessboard::BoardState& state)
@@ -308,6 +319,11 @@ void AiController::promotionRequired(Chessboard::Colour colour)
 void AiController::setStrength(Chessboard::Colour colour, int elo)
 {
     aiPlayer(colour)->setStrength(elo);
+}
+
+void AiController::setAssistanceLevel(Chessboard::Colour colour, int level)
+{
+    aiPlayer(colour)->setAssistanceLevel(level);
 }
 
 void AiController::startAssistance(Chessboard::Colour colour, const Chessboard::BoardState& state)

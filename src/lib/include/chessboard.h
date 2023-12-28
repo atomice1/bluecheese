@@ -356,11 +356,11 @@ enum class PlayerLocation {
 struct PlayerOptions {
     PlayerType playerType {PlayerType::Human};
     PlayerLocation playerLocation {PlayerLocation::LocalApp};
-    int aiNominalElo {600};
+    int aiNominalElo {1000};
+    int assistanceLevel {1};
 };
 
 struct GameOptions {
-    GameOptions();
     PlayerOptions white;
     PlayerOptions black;
 };

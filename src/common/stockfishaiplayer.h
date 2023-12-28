@@ -16,6 +16,7 @@ public:
     void cancel() override;
     void setStrength(int elo) override;
     void startAssistance(const Chessboard::BoardState& state) override;
+    void setAssistanceLevel(int level) override;
 private slots:
     void readyReadFromEngine();
 private:
@@ -33,6 +34,7 @@ private:
     QByteArray m_currentMove;
     QByteArray m_bestMove;
     int m_elo { 1000 };
+    int m_assistanceLevel {1};
     int m_timePerMove;
     int m_currentScore;
     bool m_initialized {};

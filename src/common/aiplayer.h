@@ -57,6 +57,7 @@ public slots:
     virtual void drawRequested();
     virtual void drawDeclined();
     virtual void setStrength(int elo);
+    virtual void setAssistanceLevel(int level);
     virtual void startAssistance(const Chessboard::BoardState& state);
 
 private:

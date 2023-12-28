@@ -50,6 +50,7 @@ public slots:
     void drawDeclined(Chessboard::Colour declinor);
     void promotionRequired(Chessboard::Colour colour);
     void setStrength(Chessboard::Colour colour, int elo);
+    void setAssistanceLevel(Chessboard::Colour colour, int level);
     void startAssistance(Chessboard::Colour colour, const Chessboard::BoardState& state);
 
 private:
