@@ -187,7 +187,10 @@ QByteArray BluetoothBoardAddressPrivate::toByteArray() const
 
 bool BluetoothBoardAddressPrivate::operator==(const BluetoothBoardAddressPrivate& other) const
 {
-    return info == other.info;
+    if (info.deviceUuid() != QBluetoothUuid())
+        return info.deviceUuid() == other.info.deviceUuid();
+    else
+        return info.address() == other.info.address();
 }
 
 BluetoothBoardAddressPrivate *BluetoothBoardAddressPrivate::fromByteArray(const QByteArray& in)

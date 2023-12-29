@@ -355,7 +355,7 @@ enum class PlayerLocation {
 
 struct PlayerOptions {
     PlayerType playerType {PlayerType::Human};
-    PlayerLocation playerLocation {PlayerLocation::LocalApp};
+    PlayerLocation playerLocation {PlayerLocation::LocalBoard};
     int aiNominalElo {1000};
     int assistanceLevel {1};
 };

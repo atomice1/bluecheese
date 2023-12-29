@@ -65,7 +65,7 @@ void DesktopGuiFacade::showConnectingPopup(const QString& address)
         delete m_connectingDialog;
     m_connectingDialog = new ConnectingDialog(address, m_mainWindow);
     connect(m_connectingDialog, &ConnectingDialog::rejected, this, [this]() {
-       emit disconnectRequested();
+       emit cancelConnect();
     });
     m_connectingDialog->setModal(true);
     m_connectingDialog->show();

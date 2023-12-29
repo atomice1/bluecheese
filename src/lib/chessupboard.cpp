@@ -200,18 +200,6 @@ void ChessUpBoard::writeToBoard(const QByteArray& data)
 void ChessUpBoard::sendInit()
 {
     requestRemoteBoardState();
-    uint8_t buf[] = { 0x05,
-                      0x00, // white player type
-                      0x06, // white assistance level
-                      0x00,
-                      0x00, // black player type
-                      0x06, // black assistance level
-                      0x00,
-                      0xff, // hint limit
-                      0x00, // white player remote
-                      0x00, // black player remote
-                    };
-    sendCommand(CMD_SETTINGS, QByteArray::fromRawData(reinterpret_cast<const char *>(buf), sizeof(buf)));
 }
 
 BoardState ChessUpBoard::boardStateFromRemote(const QByteArray& data)
@@ -368,10 +356,10 @@ void ChessUpBoard::setGameOptions(const Chessboard::GameOptions& gameOptions)
     uint8_t buf[] = {
         mode,
         static_cast<uint8_t>((gameOptions.white.playerType == Chessboard::PlayerType::Ai) ? 0x01 : 0x00),
-        static_cast<uint8_t>((gameOptions.white.playerType == Chessboard::PlayerType::Ai) ? 0x12 : 0x05), // white assistance level
+        static_cast<uint8_t>((gameOptions.white.playerType == Chessboard::PlayerType::Ai) ? 0x12 : gameOptions.white.assistanceLevel), // white assistance level
         0x01,
         static_cast<uint8_t>((gameOptions.black.playerType == Chessboard::PlayerType::Ai) ? 0x01 : 0x00),
-        static_cast<uint8_t>((gameOptions.black.playerType == Chessboard::PlayerType::Ai) ? 0x12 : 0x05), // black assistance level
+        static_cast<uint8_t>((gameOptions.black.playerType == Chessboard::PlayerType::Ai) ? 0x12 : gameOptions.black.assistanceLevel), // black assistance level
         0x01,
         0xff, // hint limit
         static_cast<uint8_t>((gameOptions.white.playerType != Chessboard::PlayerType::Ai &&

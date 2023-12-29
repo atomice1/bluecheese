@@ -54,7 +54,7 @@ GuiApplicationBase::GuiApplicationBase(GuiFacade *guiFacade_, const Options &opt
     connect(guiFacade(), &GuiFacade::connectToDiscoveredBoard, this, &GuiApplicationBase::onConnectToDiscoveredBoard);
     connect(guiFacade(), &GuiFacade::sendFenRequested, this, &GuiApplicationBase::onSendFenRequested);
     connect(guiFacade(), &GuiFacade::syncFromRemoteToLocal, this, &GuiApplicationBase::onSyncFromRemoteToLocal);
-    connect(guiFacade(), &GuiFacade::syncFromLocalToRemote, this, &GuiApplicationBase::onSyncFromLocalToRemote);    //QMetaObject::invokeMethod(facade(), &ApplicationFacade::connectToLastOrDiscover, Qt::QueuedConnection);
+    connect(guiFacade(), &GuiFacade::syncFromLocalToRemote, this, &GuiApplicationBase::onSyncFromLocalToRemote);
     connect(guiFacade(), &GuiFacade::requestMove, this, &GuiApplicationBase::onRequestMove);
     connect(guiFacade(), &GuiFacade::requestNewGame, this, &GuiApplicationBase::onRequestNewGame);
     connect(guiFacade(), &GuiFacade::requestDraw, this, &GuiApplicationBase::onRequestDraw);
@@ -64,6 +64,7 @@ GuiApplicationBase::GuiApplicationBase(GuiFacade *guiFacade_, const Options &opt
     guiFacade()->setConnectionState(ConnectionState::Disconnected);
     guiFacade()->setBoardState(BoardState::newGame());
     guiFacade()->gameOptionsChanged(facade()->gameOptions());
+    QMetaObject::invokeMethod(this, &GuiApplicationBase::autoConnect, Qt::QueuedConnection);
 }
 
 GuiApplicationBase::~GuiApplicationBase()
@@ -74,8 +75,10 @@ GuiApplicationBase::~GuiApplicationBase()
 void GuiApplicationBase::onConnected(Chessboard::RemoteBoard *board)
 {
     qDebug("GuiApplicationBase::onConnect(%s)", qPrintable(board->address().toString()));
+    m_connected = true;
     guiFacade()->setConnectionState(ConnectionState::Connected);
     guiFacade()->hideConnectingPopup();
+    maybeShowNewGameDialog();
 }
 
 void GuiApplicationBase::onDisconnected()
@@ -137,13 +140,31 @@ void GuiApplicationBase::onConnectRequested()
     switch (qApp->checkPermission(bluetoothPermission)) {
     case Qt::PermissionStatus::Undetermined:
         qApp->requestPermission(bluetoothPermission, this,
-                                &GuiApplicationBase::onConnectRequested);
+                                &GuiApplicationBase::autoConnect);
         break;
     case Qt::PermissionStatus::Denied:
         guiFacade()->showBluetoothPermissionDeniedPopup();
         break;
     case Qt::PermissionStatus::Granted:
         facade()->startDiscovery();
+        break;
+    }
+}
+
+void GuiApplicationBase::autoConnect()
+{
+    QBluetoothPermission bluetoothPermission;
+    bluetoothPermission.setCommunicationModes(QBluetoothPermission::Access);
+    switch (qApp->checkPermission(bluetoothPermission)) {
+    case Qt::PermissionStatus::Undetermined:
+        qApp->requestPermission(bluetoothPermission, this,
+                                &GuiApplicationBase::autoConnect);
+        break;
+    case Qt::PermissionStatus::Denied:
+        guiFacade()->showBluetoothPermissionDeniedPopup();
+        break;
+    case Qt::PermissionStatus::Granted:
+        facade()->connectToLastOrDiscover();
         break;
     }
 }
@@ -156,6 +177,7 @@ void GuiApplicationBase::onDisconnectRequested()
 void GuiApplicationBase::onCancelConnect()
 {
     facade()->disconnectFromBoard();
+    maybeShowNewGameDialog();
 }
 
 void GuiApplicationBase::onRestartDiscovery()
@@ -168,6 +190,7 @@ void GuiApplicationBase::onRestartDiscovery()
 void GuiApplicationBase::onCancelDiscovery()
 {
     facade()->stopDiscovery();
+    maybeShowNewGameDialog();
 }
 
 void GuiApplicationBase::onConnectToDiscoveredBoard(int index)
@@ -230,6 +253,10 @@ void GuiApplicationBase::onRequestMove(int fromRow, int fromCol, int toRow, int 
 void GuiApplicationBase::onRequestNewGame(const Chessboard::GameOptions& gameOptions)
 {
     qDebug("GuiApplicationBase::onRequestNewGame()");
+    if ((gameOptions.white.playerLocation == Chessboard::PlayerLocation::LocalBoard ||
+         gameOptions.black.playerLocation == Chessboard::PlayerLocation::LocalBoard) &&
+        !m_connected)
+        facade()->connectToLastOrDiscover();
     facade()->requestNewGame(gameOptions);
 }
 
@@ -295,5 +322,13 @@ void GuiApplicationBase::onRequestEdit(const Chessboard::BoardState& state)
         guiFacade()->setBoardState(state);
         guiFacade()->setEditMode(false);
         facade()->setBoardStateFromFen(state.toFenString());
+    }
+}
+
+void GuiApplicationBase::maybeShowNewGameDialog()
+{
+    if (m_pendingNewGame) {
+        m_pendingNewGame = false;
+        QMetaObject::invokeMethod(guiFacade(), &GuiFacade::showNewGameDialog, Qt::QueuedConnection);
     }
 }

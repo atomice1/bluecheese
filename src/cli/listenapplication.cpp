@@ -28,6 +28,14 @@ ListenApplication::ListenApplication(const CliOptions& options, QObject *parent)
     : ConnectedCliApplicationBase(options, parent)
 {
     connect(facade(), &ApplicationFacade::remoteBoardState, this, &ListenApplication::onRemoteBoardState);
+    connect(facade(), &ApplicationFacade::connected, this, [this]() {
+        Chessboard::GameOptions gameOptions;
+        gameOptions.white.playerType = Chessboard::PlayerType::Human;
+        gameOptions.white.playerLocation = Chessboard::PlayerLocation::LocalBoard;
+        gameOptions.black.playerType = Chessboard::PlayerType::Human;
+        gameOptions.black.playerLocation = Chessboard::PlayerLocation::LocalBoard;
+        facade()->setGameOptions(gameOptions);
+        }, Qt::QueuedConnection);
 }
 
 void ListenApplication::onRemoteBoardState(const BoardState& newState)

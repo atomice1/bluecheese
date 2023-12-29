@@ -67,10 +67,16 @@ protected slots:
     virtual void onRequestResignation(Chessboard::Colour requestor);
     virtual void onRequestPromotion(Chessboard::Piece piece);
     virtual void onRequestEdit(const Chessboard::BoardState& state);
+    virtual void autoConnect();
+
+private:
+    void maybeShowNewGameDialog();
 
 private:
     GuiFacade *m_guiFacade {};
     QList<Chessboard::BoardAddress> m_discovered;
+    bool m_pendingNewGame { true };
+    bool m_connected {};
 };
 
 #endif // GUIAPPLICATIONBASE_H
