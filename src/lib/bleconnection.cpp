@@ -83,7 +83,7 @@ BleConnection::~BleConnection()
 
 void BleConnection::controllerErrorOccurred(QLowEnergyController::Error error)
 {
-    qDebug("errorOccurred(%d)", error);
+    qDebug("BleConnection::controllerErrorOccurred(%d)", error);
     ConnectionManager::Error error2 = ConnectionManager::UnknownError;
     switch (error) {
     case QLowEnergyController::NoError:
@@ -129,7 +129,7 @@ void BleConnection::controllerErrorOccurred(QLowEnergyController::Error error)
 
 void BleConnection::serviceErrorOccurred(QLowEnergyService::ServiceError error)
 {
-    qDebug("errorOccurred(%d)", error);
+    qDebug("BleConnection::serviceErrorOccurred(%d)", error);
     ConnectionManager::Error error2 = ConnectionManager::UnknownError;
     switch (error) {
     case QLowEnergyService::NoError:
@@ -174,7 +174,6 @@ void BleConnection::disconnectFromBoard()
 {
     qDebug("BleConnection::disconnectFromDevice");
     if (m_state != Disconnected) {
-        auto oldState = m_state;
         if (m_state == Connecting) {
             m_state = Disconnected;
             emit disconnected();

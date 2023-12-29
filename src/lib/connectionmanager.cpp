@@ -60,6 +60,7 @@ void ConnectionManagerPrivate::connectToBoard(const BoardAddress& address, QObje
         delete m_connection;
     });
     QObject::connect(m_connection, &Connection::error, q, [this](ConnectionManager::Error newError) {
+        qDebug("ConnectionManagerPrivate::error");
         Q_Q(ConnectionManager);
         emit q->error(newError);
         if (m_state == Connecting) {
@@ -71,11 +72,15 @@ void ConnectionManagerPrivate::connectToBoard(const BoardAddress& address, QObje
         }
     });
     QObject::connect(m_connection, &Connection::connectionFailed, q, [this]() {
+        qDebug("ConnectionManagerPrivate::connectionFailed");
         Q_Q(ConnectionManager);
         State oldState = m_state;
         m_state = Disconnected;
-        if (oldState == Connecting)
+        if (oldState == Connected) {
+            emit q->disconnected();
+        } else if (oldState == Connecting) {
             emit q->connectionFailed();
+        }
         Connection *oldConnection = m_connection;
         m_connection = nullptr;
         delete m_connection;
