@@ -47,6 +47,7 @@ namespace {
     const uint8_t RESP_MOVE           = 0xa3;
     const uint8_t RESP_SET_STATE_OK   = 0xb1;
     const uint8_t RESP_TOUCH          = 0xb8;
+    const uint8_t RESP_UNDO           = 0xbd;
     const uint8_t MODE_REMOTE         = 0x02;
     const uint8_t MODE_AI             = 0x01;
     const uint8_t MODE_LOCAL          = 0x05;
@@ -173,6 +174,9 @@ void ChessUpBoard::readFromBoard(const QByteArray& data)
         }
         emit remotePromotion(piece);
     }
+    case RESP_UNDO:
+        emit remoteUndo();
+        break;
     }
 }
 
@@ -274,6 +278,7 @@ void ChessUpBoard::requestRemoteBoardState()
 
 void ChessUpBoard::setBoardState(const BoardState& state)
 {
+    m_previousMove.clear();
     QString fenString = state.toFenString();
     QString fenStringPieceColourCastlingEnPassant = fenString.section(' ', 0, 3);
     uint8_t countData[3];
