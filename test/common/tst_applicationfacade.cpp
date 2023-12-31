@@ -28,13 +28,17 @@ using namespace Chessboard;
 
 class MockRemoteBoard : public RemoteBoard
 {
+    Q_OBJECT
 public:
     MockRemoteBoard(QObject *parent = nullptr) :
         RemoteBoard(BoardAddress(), parent) {
     }
-    void requestDraw(Colour)
+    void requestDraw(Colour colour)
     {
+        emit remoteReceivedDrawRequested(colour);
     }
+signals:
+    void remoteReceivedDrawRequested(Colour colour);
 };
 
 class MockApplicationFacade : public ApplicationFacade
@@ -531,6 +535,42 @@ private slots:
             }
         }
     }
+    void APhbRt()
+    {
+        for (int i=0;i<100;++i) {
+            DrawAiPlayerFactory drawAiPlayerFactory(DrawAiPlayer::RequestDraw, DrawAiPlayer::AcceptDraw);
+            MockApplicationFacade appFacade(&drawAiPlayerFactory);
+            AutoDeletePointer<MockRemoteBoard> board = new MockRemoteBoard;
+            emit appFacade.connectionManager()->connected(board);
+            QSignalSpy whiteStartedSpy(drawAiPlayerFactory.whiteDrawAiPlayer(), &DrawAiPlayer::started);
+            QSignalSpy blackStartedSpy(drawAiPlayerFactory.blackDrawAiPlayer(), &DrawAiPlayer::started);
+            QSignalSpy boardStateChangedSpy(&appFacade, &ApplicationFacade::boardStateChanged);
+            QSignalSpy gameOverSpy(&appFacade, &ApplicationFacade::gameOver);
+            QSignalSpy drawSpy(&appFacade, &ApplicationFacade::draw);
+            QSignalSpy unexpectedDrawRequestedSpy(drawAiPlayerFactory.blackDrawAiPlayer(), &DrawAiPlayer::unexpectedDrawRequested);
+            QSignalSpy drawRequestedSpy(&appFacade, &ApplicationFacade::drawRequested);
+            QSignalSpy drawNotClaimableSpy(drawAiPlayerFactory.whiteDrawAiPlayer(), &DrawAiPlayer::drawNotClaimable);
+            QSignalSpy drawDeclinedSpy(&appFacade, &ApplicationFacade::drawDeclined);
+            QSignalSpy remoteReceivedDrawRequestedSpy(board.get(), &MockRemoteBoard::remoteReceivedDrawRequested);
+            Chessboard::GameOptions gameOptions;
+            gameOptions.white.playerType = Chessboard::PlayerType::Ai;
+            gameOptions.white.playerLocation = Chessboard::PlayerLocation::LocalApp;
+            gameOptions.black.playerType = Chessboard::PlayerType::Human;
+            gameOptions.black.playerLocation = Chessboard::PlayerLocation::LocalBoard;
+            appFacade.setGameOptions(gameOptions);
+            QVERIFY(whiteStartedSpy.wait());
+            QCOMPARE(drawRequestedSpy.count(), 0);
+            if (remoteReceivedDrawRequestedSpy.isEmpty())
+                QVERIFY(remoteReceivedDrawRequestedSpy.wait());
+            emit board->remoteDrawRequested(Chessboard::Colour::Black);
+            QCOMPARE(gameOverSpy.count(), 1);
+            QCOMPARE(drawSpy.count(), 1);
+            QList<QVariant> arguments = drawSpy.takeFirst();
+            Chessboard::DrawReason actualReason = arguments.at(0).value<Chessboard::DrawReason>();
+            Chessboard::DrawReason expectedReason = Chessboard::DrawReason::MutualAgreement;
+            QCOMPARE(actualReason, expectedReason);
+        }
+    }
     void draw()
     {
         QFETCH(Chessboard::PlayerType, whitePlayerType);
@@ -557,11 +597,12 @@ private slots:
         QSignalSpy drawRequestedSpy(&appFacade, &ApplicationFacade::drawRequested);
         QSignalSpy drawNotClaimableSpy(drawAiPlayerFactory.whiteDrawAiPlayer(), &DrawAiPlayer::drawNotClaimable);
         QSignalSpy drawDeclinedSpy(&appFacade, &ApplicationFacade::drawDeclined);
+        QSignalSpy remoteReceivedDrawRequestedSpy(board.get(), &MockRemoteBoard::remoteReceivedDrawRequested);
         if (whiteAction == DrawAiPlayer::ClaimDraw ||
             whiteAction == DrawAiPlayer::AutomaticDraw) {
             const QString initialState = (whiteAction == DrawAiPlayer::ClaimDraw) ?
-                QString::fromLatin1("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K w - b3 100 23") :
-                QString::fromLatin1("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K w - b3 150 23");
+                                             QString::fromLatin1("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K w - b3 100 23") :
+                                             QString::fromLatin1("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K w - b3 150 23");
             appFacade.setBoardStateFromFen(initialState);
         }
         Chessboard::GameOptions gameOptions;
@@ -661,6 +702,8 @@ private slots:
                     case Chessboard::PlayerLocation::LocalBoard:
                     default:
                         QCOMPARE(drawRequestedSpy.count(), 0);
+                        if (remoteReceivedDrawRequestedSpy.isEmpty())
+                            QVERIFY(remoteReceivedDrawRequestedSpy.wait());
                         emit board->remoteDrawRequested(Chessboard::Colour::Black);
                         break;
                     }
