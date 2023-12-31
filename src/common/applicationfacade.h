@@ -45,6 +45,7 @@ signals:
     void error(const QString& errorMessage);
     void remoteMove(int fromRow, int fromCol, int toRow, int toCol);
     void remoteBoardState(const Chessboard::BoardState& newState);
+    void remoteUndo();
     void discoveryStarted();
     void discoveryFinished();
     void boardDiscovered(const Chessboard::BoardAddress& address);
@@ -69,6 +70,7 @@ signals:
     void gameOver();
     void gameOptionsChanged(const Chessboard::GameOptions& gameOptions);
     void assistance(QList<Chessboard::AssistanceColour> colours);
+    void canUndoChanged(bool canUndo);
 
 public slots:
     virtual void connectToLast();
@@ -82,6 +84,7 @@ public slots:
     virtual void sendLocalBoardState();
     virtual void requestNewGame(const Chessboard::GameOptions& gameOptions);
     virtual void requestMove(int fromRow, int fromCol, int toRow, int toCol);
+    virtual void requestUndo();
     virtual void requestDraw(Chessboard::Colour requestor);
     virtual void declineDraw(Chessboard::Colour declinor);
     virtual void requestResignation(Chessboard::Colour requestor);

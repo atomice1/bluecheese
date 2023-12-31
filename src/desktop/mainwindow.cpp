@@ -35,6 +35,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->editToolBar->hide();
     connect(m_scene, &ChessboardScene::requestMove, this, &MainWindow::requestMove);
     connect(m_scene, &ChessboardScene::squareSelected, this, &MainWindow::squareSelected);
+    connect(ui->action_Undo, &QAction::triggered, this, &MainWindow::requestUndo);
 }
 
 MainWindow::~MainWindow()
@@ -273,4 +274,9 @@ void MainWindow::setAssistance(const QList<Chessboard::AssistanceColour>& colour
 {
     qDebug("MainWindow::setAssistance");
     m_scene->setAssistance(colours);
+}
+
+void MainWindow::setCanUndo(bool enabled)
+{
+    ui->action_Undo->setEnabled(enabled);
 }

@@ -58,6 +58,7 @@ public slots:
     void gameOptionsChanged(const Chessboard::GameOptions& gameOptions) override;
     void showBluetoothPermissionDeniedPopup() override;
     void assistance(const QList<Chessboard::AssistanceColour>& colours) override;
+    void setCanUndo(bool canUndo) override;
 
 private slots:
     void updateStatusMessage();

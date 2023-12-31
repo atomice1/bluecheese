@@ -392,6 +392,7 @@ public:
     virtual void sendAssistance(const QList<AssistanceColour>& colours);
 signals:
     void remoteMove(int fromRow, int fromCol, int toRow, int toCol);
+    void remoteUndo();
     void remotePromotion(Chessboard::Piece piece);
     void remoteBoardState(const Chessboard::BoardState& boardState);
     void remoteDrawRequested(Chessboard::Colour requestor);

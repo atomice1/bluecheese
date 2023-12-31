@@ -46,6 +46,7 @@ public slots:
     void setEditMode(bool enabled);
     void setLocalPlayer(Chessboard::Colour color, bool localPlayer);
     void setAssistance(const QList<Chessboard::AssistanceColour>& colours);
+    void setCanUndo(bool enabled);
 
 signals:
     void connectRequested();
@@ -56,6 +57,7 @@ signals:
     void requestDraw();
     void requestResignation();
     void requestEdit(const Chessboard::BoardState& state);
+    void requestUndo();
 
 protected:
     void resizeEvent(QResizeEvent *) override;

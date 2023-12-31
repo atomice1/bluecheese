@@ -45,6 +45,7 @@ DesktopGuiFacade::DesktopGuiFacade(const Options& options, QObject *parent)
     connect(m_mainWindow, &MainWindow::requestResignation, this, [this](){
         emit requestDraw(m_activeColour);
     });
+    connect(m_mainWindow, &MainWindow::requestUndo, this, &GuiFacade::requestUndo);
     QMetaObject::invokeMethod(this, [this]() {
         setConnectionState(ConnectionState::Disconnected);
         setGameProgress(GameProgress(GameProgress::InProgress));
@@ -305,4 +306,9 @@ void DesktopGuiFacade::assistance(const QList<Chessboard::AssistanceColour>& col
 {
     qDebug("DesktopGuiFacade::assistance");
     m_mainWindow->setAssistance(colours);
+}
+
+void DesktopGuiFacade::setCanUndo(bool canUndo)
+{
+    m_mainWindow->setCanUndo(canUndo);
 }

@@ -103,10 +103,12 @@ void ApplicationFacade::construct(AiPlayerFactory *aiPlayerFactory)
 
     m_board = new CompositeBoard(this);
     connect(m_board, &CompositeBoard::remoteMove, this, &ApplicationFacade::remoteMove);
+    connect(m_board, &CompositeBoard::remoteUndo, this, &ApplicationFacade::remoteUndo);
     connect(m_board, &CompositeBoard::remoteBoardState, this, &ApplicationFacade::remoteBoardState);
     connect(m_board, &CompositeBoard::localOutOfSyncWithRemote, this, &ApplicationFacade::localOutOfSyncWithRemote);
     connect(m_board, &CompositeBoard::illegalMove, this, &ApplicationFacade::illegalMove);
     connect(m_board, &CompositeBoard::remoteOutOfSyncWithLocal, this, &ApplicationFacade::remoteOutOfSyncWithLocal);
+    connect(m_board, &CompositeBoard::canUndoChanged, this, &ApplicationFacade::canUndoChanged);
     connect(m_board, &CompositeBoard::boardStateChanged, this, [this](const BoardState& state) {
         m_aiController->cancel();
         emit boardStateChanged(state);
@@ -365,6 +367,12 @@ void ApplicationFacade::requestMove(int fromRow, int fromCol, int toRow, int toC
 {
     qDebug("ApplicationFacade::requestMove(%d, %d, %d, %d)", fromRow, fromCol, toRow, toCol);
     m_board->requestMove(fromRow, fromCol, toRow, toCol);
+}
+
+void ApplicationFacade::requestUndo()
+{
+    qDebug("ApplicationFacade::requestUndo");
+    m_board->requestUndo();
 }
 
 void ApplicationFacade::requestDraw(Chessboard::Colour requestor)

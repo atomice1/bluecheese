@@ -47,25 +47,49 @@ void CompositeBoard::setRemoteBoard(Chessboard::RemoteBoard *board)
         connect(board, &RemoteBoard::remoteMove, this, [this](int fromRow, int fromCol, int toRow, int toCol) {
             bool promotion = false;
             bool legal = true;
+            Chessboard::BoardState prevLocal = m_local;
             if (!m_hasLocalMoves)
                 legal = m_local.move(fromRow, fromCol, toRow, toCol, &promotion);
             emit remoteMove(fromRow, fromCol, toRow, toCol);
             if (!m_hasLocalMoves && legal) {
                 if (promotion)
                     m_promotionRequired = true;
+                m_prevLocal = prevLocal;
                 emit boardStateChanged(m_local);
+                emit canUndoChanged(true);
             } else if (!legal) {
                 emit localOutOfSyncWithRemote();
             }
             if (!promotion)
                 checkGameOver();
         });
+        connect(board, &RemoteBoard::remoteUndo, this, [this]() {
+            bool ok = true;
+            if (!m_hasLocalMoves) {
+                if (m_prevLocal.isValid()) {
+                    m_local = m_prevLocal;
+                    m_prevLocal = BoardState();
+                    ok = true;
+                }
+            }
+            emit remoteUndo();
+            if (!m_hasLocalMoves && ok) {
+                emit boardStateChanged(m_local);
+                emit canUndoChanged(false);
+            } else if (!ok) {
+                emit localOutOfSyncWithRemote();
+            }
+        });
         connect(board, &RemoteBoard::remoteBoardState, this, [this](const BoardState& state) {
-            if (!m_hasLocalMoves)
+            if (!m_hasLocalMoves) {
+                m_prevLocal = BoardState();
                 m_local = state;
+            }
             emit remoteBoardState(state);
-            if (!m_hasLocalMoves)
+            if (!m_hasLocalMoves) {
                 emit boardStateChanged(state);
+                emit canUndoChanged(false);
+            }
         });
         connect(board, &RemoteBoard::remotePromotion, this, [this](Piece piece) {
             if (!m_hasLocalMoves) {
@@ -99,6 +123,7 @@ void CompositeBoard::requestMove(int fromRow, int fromCol, int toRow, int toCol)
         m_remote->requestMove(fromRow, fromCol, toRow, toCol);
     } else {
         bool promotion = false;
+        Chessboard::BoardState prevLocal = m_local;
         bool ok = m_local.move(fromRow, fromCol, toRow, toCol, &promotion);
         if (!ok) {
             emit illegalMove(fromRow, fromCol, toRow, toCol);
@@ -107,13 +132,32 @@ void CompositeBoard::requestMove(int fromRow, int fromCol, int toRow, int toCol)
             if (ok) {
                 if (promotion)
                     m_promotionRequired = true;
+                m_prevLocal = prevLocal;
                 emit boardStateChanged(m_local);
+                emit canUndoChanged(true);
                 if (promotion)
                     emit promotionRequired();
             }
             if (!promotion)
                 checkGameOver();
         }
+    }
+}
+
+void CompositeBoard::requestUndo()
+{
+    qDebug("CompositeBoard::requestUndo");
+    m_drawRequested = false;
+    m_promotionRequired = false;
+    if (m_prevLocal.isValid()) {
+        m_local = m_prevLocal;
+        m_prevLocal = BoardState();
+        if (m_remote)
+            m_remote->setBoardState(m_local);
+        else
+            m_hasLocalMoves = true;
+        emit boardStateChanged(m_local);
+        emit canUndoChanged(false);
     }
 }
 
@@ -136,11 +180,13 @@ void CompositeBoard::setBoardState(const Chessboard::BoardState& boardState)
     m_drawRequested = false;
     m_promotionRequired = false;
     m_local = boardState;
+    m_prevLocal = BoardState();
     if (m_remote)
         m_remote->setBoardState(boardState);
     else
         m_hasLocalMoves = true;
     emit boardStateChanged(m_local);
+    emit canUndoChanged(false);
     checkGameOver();
 }
 
@@ -165,10 +211,12 @@ void CompositeBoard::requestNewGame(const Chessboard::GameOptions& gameOptions)
     m_drawRequested = false;
     m_promotionRequired = false;
     m_local = BoardState::newGame();
+    m_prevLocal = BoardState();
     m_gameOptions = gameOptions;
     if (m_remote)
         m_remote->requestNewGame(gameOptions);
     emit boardStateChanged(m_local);
+    emit canUndoChanged(false);
 }
 
 void CompositeBoard::requestPromotion(Piece piece)
@@ -240,4 +288,9 @@ void CompositeBoard::sendAssistance(const QList<Chessboard::AssistanceColour>& c
 {
     if (m_remote)
         m_remote->sendAssistance(colours);
+}
+
+bool CompositeBoard::canUndo() const
+{
+    return m_prevLocal.isValid();
 }

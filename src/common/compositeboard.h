@@ -30,6 +30,7 @@ public:
     bool isPromotionRequired() const { return m_promotionRequired; }
     bool isDrawRequested() const { return m_drawRequested; }
     Chessboard::Colour activeColour() const { return m_local.activeColour; }
+    bool canUndo() const;
 public slots:
     void setRemoteBoard(Chessboard::RemoteBoard *board);
     void requestMove(int fromRow, int fromCol, int toRow, int toCol);
@@ -37,6 +38,7 @@ public slots:
         requestMove(from.row, from.col, to.row, to.col);
     }
     void requestPromotion(Chessboard::Piece piece);
+    void requestUndo();
     void setBoardState(const Chessboard::BoardState& boardState);
     void requestNewGame(const Chessboard::GameOptions& gameOptions);
     void requestRemoteBoardState();
@@ -50,6 +52,7 @@ signals:
     void remoteMove(int fromRow, int fromCol, int toRow, int toCol);
     void remotePromotion(Chessboard::Piece piece);
     void remoteBoardState(const Chessboard::BoardState& boardState);
+    void remoteUndo();
     void promotionRequired();
     void drawRequested(Chessboard::Colour requestor);
     void drawDeclined(Chessboard::Colour declinor);
@@ -60,10 +63,12 @@ signals:
     void illegalMove(int fromRow, int fromCol, int toRow, int toCol);
     void localOutOfSyncWithRemote();
     void remoteOutOfSyncWithLocal();
+    void canUndoChanged(bool canUndo);
 private slots:
     void checkGameOver();
 private:
     Chessboard::BoardState m_local;
+    Chessboard::BoardState m_prevLocal;
     Chessboard::RemoteBoard *m_remote {};
     bool m_hasLocalMoves {};
     bool m_drawRequested { false };

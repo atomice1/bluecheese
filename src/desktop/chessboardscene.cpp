@@ -171,8 +171,12 @@ void ChessboardScene::setBoardState(const Chessboard::BoardState& newState)
 {
     m_board = newState;
     m_assistance.clear();
+    m_from = Square();
+    m_to = Square();
     update();
     updateSquares();
+    if (m_editMode)
+        emit squareSelected(-1, -1);
 }
 
 void ChessboardScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
