@@ -242,6 +242,7 @@ bool ChessboardScene::isLocalPlayerColour(Chessboard::Colour colour)
     case Chessboard::Colour::White:
         return m_localPlayer[0];
     case Chessboard::Colour::Black:
+    default:
         return m_localPlayer[1];
     }
 }

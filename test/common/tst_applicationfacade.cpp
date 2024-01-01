@@ -207,6 +207,7 @@ public:
             m_whiteDrawAiPlayer = new DrawAiPlayer(colour, m_whiteAction, parent);
             return m_whiteDrawAiPlayer;
         case Chessboard::Colour::Black:
+        default:
             m_blackDrawAiPlayer = new DrawAiPlayer(colour, m_blackAction, parent);
             return m_blackDrawAiPlayer;
         }
