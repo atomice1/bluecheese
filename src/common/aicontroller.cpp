@@ -337,6 +337,7 @@ AiPlayerControllerProxy *AiController::aiPlayer(Chessboard::Colour colour)
     case Chessboard::Colour::White:
         return m_whiteAiPlayer;
     case Chessboard::Colour::Black:
+    default:
         return m_blackAiPlayer;
     }
 }
