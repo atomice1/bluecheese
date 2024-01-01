@@ -392,7 +392,7 @@ void ChessUpBoard::requestResignation(Colour requestor)
 
 void ChessUpBoard::sendAssistance(const QList<AssistanceColour>& colours)
 {
-    QBitArray bits(2 * colours.size());
+    QBitArray bits((2 * colours.size() + 7) / 8 * 8);
     for (int i=0;i<colours.size();++i) {
         int byte = i / 4;
         int bit = byte * 8 + (3-(i % 4)) * 2;
