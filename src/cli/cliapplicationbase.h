@@ -22,7 +22,7 @@
 #include "applicationbase.h"
 #include "chessboard.h"
 
-class CliOptions;
+struct CliOptions;
 
 class CliApplicationBase : public ApplicationBase
 {
