@@ -98,6 +98,7 @@ public:
             emit requestMove(1, startCallCount, 2, startCallCount);
             break;
         case Chessboard::Colour::Black:
+        default:
             emit requestMove(5, startCallCount, 4, startCallCount);
             break;
         }
@@ -118,6 +119,7 @@ public:
             m_whiteAiPlayer = new White(colour, parent);
             return m_whiteAiPlayer;
         case Chessboard::Colour::Black:
+        default:
             m_blackAiPlayer = new Black(colour, parent);
             return m_blackAiPlayer;
         }

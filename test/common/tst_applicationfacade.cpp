@@ -116,6 +116,7 @@ public:
             m_whitePromotionAiPlayer = new WhitePromotionAiPlayer(colour, parent);
             return m_whitePromotionAiPlayer;
         case Chessboard::Colour::Black:
+        default:
             m_blackPromotionAiPlayer = new BlackPromotionAiPlayer(colour, parent);
             return m_blackPromotionAiPlayer;
         }
