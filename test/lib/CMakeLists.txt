@@ -52,3 +52,18 @@ target_link_libraries(tst_pgn
         Qt${QT_VERSION_MAJOR}::Core
         Qt${QT_VERSION_MAJOR}::Test
         chessboard)
+
+if(WIN32)
+    get_target_property(qt_core_location Qt${QT_VERSION_MAJOR}::Core IMPORTED_LOCATION)
+    get_filename_component(qt_core_path "${qt_core_location}" PATH)
+    string(REPLACE "/" "\\" qt_core_path_bs "${qt_core_path}")
+    string(REPLACE "/" "\\" chessboard_location_bs $<TARGET_FILE_DIR:chessboard>)
+    string(REPLACE ";" "\;" escaped_path "$ENV{PATH}")
+    string(PREPEND path "${chessboard_location_bs}" "\;" "${qt_core_path_bs}" "\;" "${escaped_path}")
+    set_property(TEST
+        algebraicnotation
+        boardstate
+        pgn
+        APPEND PROPERTY ENVIRONMENT
+        "PATH=${path}")
+endif()
