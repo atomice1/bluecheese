@@ -25,7 +25,7 @@
 class ConnectingDialog;
 class DiscoveryDialog;
 class MainWindow;
-class Options;
+struct Options;
 
 class DesktopGuiFacade : public GuiFacade
 {

@@ -24,7 +24,7 @@
 #include <QString>
 
 class ApplicationBase;
-class Options;
+struct Options;
 class QCommandLineParser;
 
 class ApplicationFactoryBase
