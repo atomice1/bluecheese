@@ -8,7 +8,7 @@ Supported Platforms: Windows 10 22H2, Windows 11, MacOS 13, MacOS 14, Ubuntu 22.
 Building
 --------
 
-Requirements: Qt SDK 6.6, cmake 3.16, Stockfish 16+ (for AI support)
+Requirements: Qt SDK 6.6, cmake 3.21, Stockfish 16 (for AI support)
 
     cmake -DDEFAULT_STOCKFISH_PATH=<path to stockfish executable> .
     cmake --build .
