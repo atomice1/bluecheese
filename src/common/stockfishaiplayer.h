@@ -26,7 +26,7 @@ private:
     void processResponse(const QByteArray& response);
     void nextAssistance();
 
-    QProcess *m_process;
+    QProcess *m_process {};
     QString m_stockfishPath;
     Chessboard::BoardState m_board;
     QList<QPair<Chessboard::Square, Chessboard::Square> > m_sortedMoves;
