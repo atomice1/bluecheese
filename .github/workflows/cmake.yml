@@ -25,7 +25,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-22.04, windows-2022]
+        os: [ubuntu-22.04, windows-2022, macos-13]
         include:
           - os: ubuntu-22.04
             qt-archives: icu
@@ -43,10 +43,10 @@ jobs:
       if: matrix.os == 'windows-2022'
 
     - name: Setup cmake
-      uses: symbitic/install-cmake@master
+      uses: lukka/get-cmake@v3.28.1
       with:
-        cmake: '3.16.9'
-        ninja: '1.9.0'
+        cmakeVersion: '3.21.7'
+        ninjaVersion: '1.11.1'
 
     - name: Install Qt
       uses: jurplel/install-qt-action@v3
@@ -67,7 +67,7 @@ jobs:
 
     - name: Test
       working-directory: ${{github.workspace}}/build
-      run: ctest -C ${{env.BUILD_TYPE}} --verbose
+      run: ctest -C ${{env.BUILD_TYPE}}
 
     - name: Install
       run: cmake --install ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --prefix ${{github.workspace}}/install
