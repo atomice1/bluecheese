@@ -32,6 +32,7 @@ class AiController : public QObject
 public:
     explicit AiController(AiPlayerFactory *factory, QObject *parent = nullptr);
     ~AiController();
+    void setFactory(AiPlayerFactory *factory);
 
 signals:
     void requestMove(int fromRow, int fromCol, int toRow, int toCol);
@@ -55,6 +56,7 @@ public slots:
 
 private:
     AiPlayerControllerProxy *aiPlayer(Chessboard::Colour);
+    void createAiPlayers(AiPlayerFactory *factory);
     void createAiPlayer(Chessboard::Colour colour, AiPlayerFactory *factory, AiPlayerControllerProxy **controllerProxy);
 
     QThread *m_thread;

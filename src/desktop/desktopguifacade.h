@@ -59,6 +59,7 @@ public slots:
     void showBluetoothPermissionDeniedPopup() override;
     void assistance(const QList<Chessboard::AssistanceColour>& colours) override;
     void setCanUndo(bool canUndo) override;
+    void showConfigureEngineDialog(const QString& errorMessage, const QString& stockfishPath) override;
 
 private slots:
     void updateStatusMessage();

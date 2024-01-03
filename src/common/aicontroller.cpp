@@ -244,8 +244,7 @@ AiController::AiController(AiPlayerFactory *factory, QObject *parent)
 {
     connect(m_thread, &QThread::finished, m_thread, &QThread::deleteLater);
     m_thread->start();
-    createAiPlayer(Chessboard::Colour::White, factory, &m_whiteAiPlayer);
-    createAiPlayer(Chessboard::Colour::Black, factory, &m_blackAiPlayer);
+    createAiPlayers(factory);
 }
 
 AiController::~AiController()
@@ -262,6 +261,12 @@ AiController::~AiController()
     QMetaObject::invokeMethod(threadKiller, [threadKiller]() {
             threadKiller->deleteLater();
         }, Qt::QueuedConnection);
+}
+
+void AiController::createAiPlayers(AiPlayerFactory *factory)
+{
+    createAiPlayer(Chessboard::Colour::White, factory, &m_whiteAiPlayer);
+    createAiPlayer(Chessboard::Colour::Black, factory, &m_blackAiPlayer);
 }
 
 void AiController::createAiPlayer(Chessboard::Colour colour, AiPlayerFactory *factory, AiPlayerControllerProxy **controllerProxy)
@@ -340,6 +345,13 @@ AiPlayerControllerProxy *AiController::aiPlayer(Chessboard::Colour colour)
     default:
         return m_blackAiPlayer;
     }
+}
+
+void AiController::setFactory(AiPlayerFactory *factory)
+{
+    delete m_whiteAiPlayer;
+    delete m_blackAiPlayer;
+    createAiPlayers(factory);
 }
 
 #include "aicontroller.moc"
