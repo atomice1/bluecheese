@@ -19,7 +19,7 @@ name: CMake
 on: [push, pull_request]
 
 env:
-  BUILD_TYPE: Debug
+  BUILD_TYPE: ${{startsWith(github.ref, 'refs/tags/v') && 'Release' || 'Debug' }}
 
 jobs:
   build:
@@ -70,15 +70,15 @@ jobs:
       run: ctest -C ${{env.BUILD_TYPE}}
 
     - name: Install
-      run: cmake --install ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --prefix ${{github.workspace}}/bluecheese${{github.ref_name && '-' || ''}}${{github.ref_name}}
+      run: cmake --install ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --prefix ${{github.workspace}}/bluecheese${{github.ref_name && '-' || ''}}${{github.ref_name}}-${{runner.os}}-${{runner.arch}}
 
     - name: Zip
       uses: thedoctor0/zip-release@0.7.5
       with:
         type: 'zip'
-        filename: bluecheese${{github.ref_name && '-' || ''}}${{github.ref_name}}.zip
+        filename: bluecheese${{github.ref_name && '-' || ''}}${{github.ref_name}}-${{runner.os}}-${{runner.arch}}.zip
         directory: ${{github.workspace}}
-        path: bluecheese${{github.ref_name && '-' || ''}}${{github.ref_name}}
+        path: bluecheese${{github.ref_name && '-' || ''}}${{github.ref_name}}-${{runner.os}}-${{runner.arch}}
 
     - name: Release
       uses: softprops/action-gh-release@v1
@@ -86,4 +86,4 @@ jobs:
       with:
         generate_release_notes: true
         draft: true
-        files: bluecheese${{github.ref_name}} && '-' || ''}}${{github.ref_name}}.zip
+        files: bluecheese${{github.ref_name && '-' || ''}}${{github.ref_name}}-${{runner.os}}-${{runner.arch}}.zip

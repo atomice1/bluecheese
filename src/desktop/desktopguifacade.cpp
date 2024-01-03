@@ -19,6 +19,7 @@
 #include <QGuiApplication>
 #include <QMessageBox>
 #include "commontranslations.h"
+#include "configureenginedialog.h"
 #include "connectingdialog.h"
 #include "desktopguifacade.h"
 #include "discoverydialog.h"
@@ -311,4 +312,13 @@ void DesktopGuiFacade::assistance(const QList<Chessboard::AssistanceColour>& col
 void DesktopGuiFacade::setCanUndo(bool canUndo)
 {
     m_mainWindow->setCanUndo(canUndo);
+}
+
+void DesktopGuiFacade::showConfigureEngineDialog(const QString& errorMessage, const QString& stockfishPath)
+{
+    ConfigureEngineDialog *configureEngineDialog = new ConfigureEngineDialog(errorMessage, stockfishPath, m_mainWindow);
+    configureEngineDialog->setAttribute(Qt::WA_DeleteOnClose);
+    configureEngineDialog->setModal(true);
+    configureEngineDialog->show();
+    connect(configureEngineDialog, &ConfigureEngineDialog::configureEngine, this, &GuiFacade::configureEngine);
 }

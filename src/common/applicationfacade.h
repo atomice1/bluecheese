@@ -71,6 +71,7 @@ signals:
     void gameOptionsChanged(const Chessboard::GameOptions& gameOptions);
     void assistance(QList<Chessboard::AssistanceColour> colours);
     void canUndoChanged(bool canUndo);
+    void engineNeedsConfigure(const QString& errorMessage, const QString& stockfishPath);
 
 public slots:
     virtual void connectToLast();
@@ -90,6 +91,7 @@ public slots:
     virtual void requestResignation(Chessboard::Colour requestor);
     virtual void requestPromotion(Chessboard::Piece piece);
     virtual void setGameOptions(const Chessboard::GameOptions& gameOptions);
+    virtual void configureEngine(const QString& stockfishPath);
 
 protected slots:
     virtual void onConnectionError(Chessboard::ConnectionManager::Error error);
@@ -109,6 +111,7 @@ private:
     AiController *m_aiController {};
     Chessboard::GameOptions m_gameOptions;
     GameProgress m_gameProgress;
+    QString m_stockfishPath;
 
     bool isCurrentPlayerAppAi() const;
     bool isPlayerAppAi(Chessboard::Colour colour) const;

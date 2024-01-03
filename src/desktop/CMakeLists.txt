@@ -45,7 +45,8 @@ add_executable(chessboard-desktop
     syncdialog.cpp
     syncdialog.h
     syncdialog.ui
-    newgamedialog.h newgamedialog.cpp newgamedialog.ui)
+    newgamedialog.h newgamedialog.cpp newgamedialog.ui
+    configureenginedialog.h configureenginedialog.cpp configureenginedialog.ui)
 
 target_link_libraries(chessboard-desktop
     PUBLIC

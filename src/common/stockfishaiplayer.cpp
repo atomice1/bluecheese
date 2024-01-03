@@ -98,8 +98,8 @@ void StockfishAiPlayer::sendCommand(const QByteArray& command)
         if (!initialize())
             return;
     }
-    Q_ASSERT(m_process);
-    m_process->write(command + "\n");
+    if (m_process)
+        m_process->write(command + "\n");
 }
 
 void StockfishAiPlayer::readyReadFromEngine()
@@ -208,9 +208,9 @@ void StockfishAiPlayer::setAssistanceLevel(int level)
 void StockfishAiPlayer::startAssistance(const Chessboard::BoardState& state)
 {
     qDebug("StockfishAiPlayer::startAssistance -- level = %d", m_assistanceLevel);
-    sendCommand("stop");
     if (m_assistanceLevel == 1)
         return;
+    sendCommand("stop");
     m_assistanceMode = true;
     m_board = state;
     m_sortedMoves = state.sortedLegalMoves();

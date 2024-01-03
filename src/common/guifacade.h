@@ -48,6 +48,7 @@ signals:
     void requestResignation(Chessboard::Colour requestor);
     void requestEdit(const Chessboard::BoardState& state);
     void requestUndo();
+    void configureEngine(const QString& stockfishPath);
 
 public slots:
     virtual void showConnectingPopup(const QString& address) = 0;
@@ -75,6 +76,7 @@ public slots:
     virtual void showBluetoothPermissionDeniedPopup() = 0;
     virtual void assistance(const QList<Chessboard::AssistanceColour>& colours) = 0;
     virtual void setCanUndo(bool canUndo) = 0;
+    virtual void showConfigureEngineDialog(const QString& errorMessage, const QString& stockfishPath) = 0;
 };
 
 #endif // GUIFACADE_H

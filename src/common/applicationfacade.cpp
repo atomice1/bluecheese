@@ -65,15 +65,15 @@ ApplicationFacade::ApplicationFacade(QObject *parent)
     : QObject{parent}
 {
     m_settings.beginGroup(STOCKFISH_GROUP);
-    QString stockfishPath = m_settings.value(PATH, QString()).toString();
-    if (stockfishPath.isEmpty())
-        stockfishPath = QFile::decodeName(DEFAULT_STOCKFISH_PATH);
-    if (stockfishPath == QLatin1String("none"))
-        stockfishPath.clear();
-    else if (QFileInfo(stockfishPath).isRelative())
-        stockfishPath = QFileInfo(QDir(QCoreApplication::applicationDirPath()), stockfishPath).filePath();
+    m_stockfishPath = m_settings.value(PATH, QString()).toString();
+    if (m_stockfishPath.isEmpty())
+        m_stockfishPath = QFile::decodeName(DEFAULT_STOCKFISH_PATH);
+    if (m_stockfishPath == QLatin1String("none"))
+        m_stockfishPath.clear();
+    else if (QFileInfo(m_stockfishPath).isRelative())
+        m_stockfishPath = QFileInfo(QDir(QCoreApplication::applicationDirPath()), m_stockfishPath).filePath();
     m_settings.endGroup();
-    StockfishAiPlayerFactory stockfishAiPlayerFactory(stockfishPath);
+    StockfishAiPlayerFactory stockfishAiPlayerFactory(m_stockfishPath);
     construct(&stockfishAiPlayerFactory);
 }
 
@@ -433,10 +433,12 @@ void ApplicationFacade::aiError(AiPlayer::Error error)
     switch (error) {
     case AiPlayer::EngineNotConfigured:
         errorMessage = tr("engine not configured");
-        break;
+        emit engineNeedsConfigure(errorMessage, m_stockfishPath);
+        return;
     case AiPlayer::EngineNotFound:
-        errorMessage = tr("configured engine not found");
-        break;
+        errorMessage = tr("engine not found");
+        emit engineNeedsConfigure(errorMessage, m_stockfishPath);
+        return;
     case AiPlayer::EngineIncompatible:
         errorMessage = tr("engine is incompatible");
         break;
@@ -482,4 +484,15 @@ void ApplicationFacade::maybeStartAi(Chessboard::Colour colour)
     } else {
         qDebug("ApplicationFacade::maybeStartAi: game not in progress");
     }
+}
+
+void ApplicationFacade::configureEngine(const QString& stockfishPath)
+{
+    m_stockfishPath = stockfishPath;
+    m_settings.beginGroup(STOCKFISH_GROUP);
+    m_settings.setValue(PATH, stockfishPath);
+    m_settings.endGroup();
+    StockfishAiPlayerFactory stockfishAiPlayerFactory(stockfishPath);
+    m_aiController->setFactory(&stockfishAiPlayerFactory);
+    maybeStartAi(m_board->activeColour());
 }

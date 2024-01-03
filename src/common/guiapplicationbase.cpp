@@ -47,6 +47,7 @@ GuiApplicationBase::GuiApplicationBase(GuiFacade *guiFacade_, const Options &opt
     connect(facade(), &ApplicationFacade::gameOptionsChanged, guiFacade(), &GuiFacade::gameOptionsChanged);
     connect(facade(), &ApplicationFacade::assistance, guiFacade(), &GuiFacade::assistance);
     connect(facade(), &ApplicationFacade::canUndoChanged, guiFacade(), &GuiFacade::setCanUndo);
+    connect(facade(), &ApplicationFacade::engineNeedsConfigure, guiFacade(), &GuiFacade::showConfigureEngineDialog);
     connect(guiFacade(), &GuiFacade::connectRequested, this, &GuiApplicationBase::onConnectRequested);
     connect(guiFacade(), &GuiFacade::disconnectRequested, this, &GuiApplicationBase::onDisconnectRequested);
     connect(guiFacade(), &GuiFacade::cancelConnect, this, &GuiApplicationBase::onCancelConnect);
@@ -63,6 +64,7 @@ GuiApplicationBase::GuiApplicationBase(GuiFacade *guiFacade_, const Options &opt
     connect(guiFacade(), &GuiFacade::requestPromotion, this, &GuiApplicationBase::onRequestPromotion);
     connect(guiFacade(), &GuiFacade::requestEdit, this, &GuiApplicationBase::onRequestEdit);
     connect(guiFacade(), &GuiFacade::requestUndo, facade(), &ApplicationFacade::requestUndo);
+    connect(guiFacade(), &GuiFacade::configureEngine, facade(), &ApplicationFacade::configureEngine);
     guiFacade()->setConnectionState(ConnectionState::Disconnected);
     guiFacade()->setBoardState(BoardState::newGame());
     guiFacade()->gameOptionsChanged(facade()->gameOptions());
