@@ -66,11 +66,23 @@ ApplicationFacade::ApplicationFacade(QObject *parent)
 {
     m_settings.beginGroup(STOCKFISH_GROUP);
     m_stockfishPath = m_settings.value(PATH, QString()).toString();
-    if (m_stockfishPath.isEmpty())
+    if (m_stockfishPath.isEmpty()) {
         m_stockfishPath = QFile::decodeName(DEFAULT_STOCKFISH_PATH);
-    if (m_stockfishPath == QLatin1String("none"))
-        m_stockfishPath.clear();
-    else if (QFileInfo(m_stockfishPath).isRelative())
+        if (m_stockfishPath == QLatin1String("stockfish")) {
+#ifdef WIN32
+            m_stockfishPath = QLatin1String("stockfish.exe");
+#endif
+            QString path = QFileInfo(QCoreApplication::applicationDirPath(), m_stockfishPath).filePath();
+            if (QFile::exists(path)) {
+                m_stockfishPath = path;
+            } else {
+                path = QFileInfo(QFileInfo(QCoreApplication::applicationDirPath(), QLatin1String("bin")).dir(), m_stockfishPath).filePath();
+                if (QFile::exists(path))
+                    m_stockfishPath = path;
+            }
+        }
+    }
+    if (QFileInfo(m_stockfishPath).isRelative())
         m_stockfishPath = QFileInfo(QDir(QCoreApplication::applicationDirPath()), m_stockfishPath).filePath();
     m_settings.endGroup();
     StockfishAiPlayerFactory stockfishAiPlayerFactory(m_stockfishPath);
