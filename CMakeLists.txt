@@ -43,5 +43,5 @@ add_subdirectory(src)
 add_subdirectory(test)
 
 add_custom_target(docs SOURCES
-    README.md
+    docs/README.md
     LICENSE.txt)
