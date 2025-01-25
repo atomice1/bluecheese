@@ -79,10 +79,12 @@ void ChessUpBoard::discoveryFinished()
     if (m_uartService->state() != QLowEnergyService::RemoteServiceDiscovered ||
         m_batteryService->state() != QLowEnergyService::RemoteServiceDiscovered)
         return;
+    qDebug("ChessUpBoard::discoveryFinished");
     m_txCharacteristic = m_uartService->characteristic(QBluetoothUuid(RX_CHARACTERISTIC_UUID));
     Q_ASSERT(m_txCharacteristic.isValid());
     m_rxCharacteristic = m_uartService->characteristic(QBluetoothUuid(TX_CHARACTERISTIC_UUID));
     Q_ASSERT(m_rxCharacteristic.isValid());
+    Q_ASSERT(m_rxCharacteristic.properties() & QLowEnergyCharacteristic::Notify);
     m_batteryCharacteristic = m_batteryService->characteristic(QBluetoothUuid::CharacteristicType::BatteryLevel);
     Q_ASSERT(m_batteryCharacteristic.isValid());
     m_rxClientCharacteristicConfiguration = m_rxCharacteristic.clientCharacteristicConfiguration();
@@ -91,9 +93,14 @@ void ChessUpBoard::discoveryFinished()
     Q_ASSERT(m_batteryClientCharacteristicConfiguration.isValid());
     m_batteryService->readCharacteristic(m_batteryCharacteristic);
     // Enable notifications.
+#ifdef __linux__
+    m_uartService->writeDescriptor(m_rxClientCharacteristicConfiguration, QByteArray::fromHex("0100"));
+    m_batteryService->writeDescriptor(m_batteryClientCharacteristicConfiguration, QByteArray::fromHex("0100"));
+#else
     uint8_t buf[] = {0x01, 0x00};
     m_uartService->writeDescriptor(m_rxClientCharacteristicConfiguration, QByteArray::fromRawData(reinterpret_cast<const char *>(buf), sizeof(buf)));
     m_batteryService->writeDescriptor(m_batteryClientCharacteristicConfiguration, QByteArray::fromRawData(reinterpret_cast<const char *>(buf), sizeof(buf)));
+#endif
     emit m_connection->connected(this);
     sendInit();
 }
@@ -190,6 +197,7 @@ void ChessUpBoard::writeToBoard(const QByteArray& data)
     qDebug("ChessUpBoard::writeToBoard(%s)", qPrintable(data.toHex(' ')));
     m_responseRead = false;
     m_uartService->writeCharacteristic(m_txCharacteristic, data, QLowEnergyService::WriteWithResponse);
+#ifndef __linux__
     if (static_cast<uint8_t>(data.at(0)) == CMD_GET_STATE ||
         static_cast<uint8_t>(data.at(0)) == CMD_SETTINGS ||
         static_cast<uint8_t>(data.at(0)) == CMD_PROMOTION) {
@@ -199,6 +207,7 @@ void ChessUpBoard::writeToBoard(const QByteArray& data)
             qApp->processEvents();
         }
     }
+#endif
 }
 
 void ChessUpBoard::sendInit()

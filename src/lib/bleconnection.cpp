@@ -17,6 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  */
 
+#include <QBluetoothDeviceDiscoveryAgent>
 #include <QBluetoothUuid>
 #include <QLatin1String>
 #include <QLowEnergyController>
@@ -81,9 +82,47 @@ BleConnection::~BleConnection()
 {
 }
 
+void BleConnection::startDiscovery()
+{
+    qDebug("BleConnection::startDiscovery");
+    m_discoveryStarted = true;
+    m_discoveryAgent = new QBluetoothDeviceDiscoveryAgent;
+
+    connect(m_discoveryAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered,
+            this, [this](const QBluetoothDeviceInfo& info) {
+        qDebug("BleConnection::deviceDiscovered");
+        if (info.address() == m_info.address()) {
+            m_deviceDiscovered = true;
+            QMetaObject::invokeMethod(this, [this]() {
+                m_central->connectToDevice();
+            }, Qt::QueuedConnection);
+        }
+    });
+    connect(m_discoveryAgent, &QBluetoothDeviceDiscoveryAgent::finished,
+            this, [this]() {
+        qDebug("BleConnection::discoveryFinished");
+        if (!m_deviceDiscovered)
+            controllerErrorOccurred(QLowEnergyController::UnknownRemoteDeviceError);
+    });
+    connect(m_discoveryAgent, &QBluetoothDeviceDiscoveryAgent::errorOccurred,
+            this, [this]() {
+        qDebug("BleConnection::discoveryErrorOccurred");
+        if (!m_deviceDiscovered)
+            controllerErrorOccurred(QLowEnergyController::UnknownRemoteDeviceError);
+    });
+    m_discoveryAgent->start();
+}
+
 void BleConnection::controllerErrorOccurred(QLowEnergyController::Error error)
 {
     qDebug("BleConnection::controllerErrorOccurred(%d)", error);
+    if (error == QLowEnergyController::UnknownRemoteDeviceError && !m_discoveryStarted) {
+        // With the bluez stack we may need to re-discover an existing address before we can connect.
+        QMetaObject::invokeMethod(this, [this]() {
+            startDiscovery();
+        }, Qt::QueuedConnection);
+        return;
+    }
     ConnectionManager::Error error2 = ConnectionManager::UnknownError;
     switch (error) {
     case QLowEnergyController::NoError:

@@ -26,6 +26,8 @@
 #include "bleboardfactory.h"
 #include "connection.h"
 
+class QBluetoothDeviceDiscoveryAgent;
+
 namespace Chessboard {
 
 class BleConnection : public Connection
@@ -43,6 +45,7 @@ private slots:
     void controllerErrorOccurred(QLowEnergyController::Error error);
     void serviceErrorOccurred(QLowEnergyService::ServiceError error);
 private:
+    void startDiscovery();
     enum State {
         Disconnected,
         Connecting,
@@ -52,11 +55,14 @@ private:
         Disconnecting
     };
     QLowEnergyController *m_central;
+    QBluetoothDeviceDiscoveryAgent *m_discoveryAgent;
     Board *m_board;
     QBluetoothDeviceInfo m_info;
     QList<QBluetoothUuid> m_services;
     BleBoardFactory m_factory;
     State m_state { Disconnected };
+    bool m_discoveryStarted {};
+    bool m_deviceDiscovered {};
 };
 
 }

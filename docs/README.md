@@ -3,12 +3,14 @@ Bluecheese Smart Chessboard Client
 
 bluecheese is an unofficial client for the ChessUp smart chessboard.
 
-Supported Platforms: Windows 10 22H2, Windows 11, MacOS 13, MacOS 14, Ubuntu 22.04.
+Supported Platforms: Windows 10 22H2, Windows 11, MacOS 13, MacOS 14, Ubuntu 22.04, Ubuntu 24.04.
 
 Building
 --------
 
-Requirements: Qt SDK 6.6, cmake 3.21, Stockfish 16 (for AI support)
+Requirements: Qt SDK 6.6, Qt Connectivity, cmake 3.21, Stockfish 16 (for AI support)
+
+Ubuntu packages: libglx-dev libgl1-mesa-dev
 
     cmake -DDEFAULT_STOCKFISH_PATH=<path to stockfish executable> .
     cmake --build .
@@ -42,4 +44,4 @@ Send a FEN string to the board:
 
 Get a FEN string from the board:
 
-    bluecheese --address ADDRESS --getfen FEN
+    bluecheese --address ADDRESS --getfen
