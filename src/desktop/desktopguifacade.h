@@ -67,9 +67,9 @@ private slots:
 private:
     void showSyncPopup(SyncDialog::Direction direction);
 
-    ConnectingDialog *m_connectingDialog;
-    DiscoveryDialog *m_discoveryDialog;
-    MainWindow *m_mainWindow;
+    ConnectingDialog *m_connectingDialog {};
+    DiscoveryDialog *m_discoveryDialog {};
+    MainWindow *m_mainWindow {};
     Chessboard::Colour m_activeColour { Chessboard::Colour::White };
     ConnectionState m_connectionState { ConnectionState::Connected };
     GameProgress m_progress { GameProgress::InProgress };

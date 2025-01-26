@@ -56,7 +56,7 @@ private:
 
     QMap<QPair<Chessboard::Square, Chessboard::ColouredPiece>, QGraphicsItem *> m_itemsBySquare;
     QMap<Chessboard::ColouredPiece, QList<QGraphicsItem *> > m_itemsByPiece;
-    QGraphicsRectItem *m_squares[8][8];
+    QGraphicsRectItem *m_squares[8][8] {};
     Chessboard::BoardState m_board;
     QFont m_font;
     Chessboard::Square m_from, m_to;

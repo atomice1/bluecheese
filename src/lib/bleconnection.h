@@ -61,6 +61,7 @@ private:
     QList<QBluetoothUuid> m_services;
     BleBoardFactory m_factory;
     State m_state { Disconnected };
+    int m_connectRetries {};
     bool m_discoveryStarted {};
     bool m_deviceDiscovered {};
 };

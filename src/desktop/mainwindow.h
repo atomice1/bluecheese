@@ -94,7 +94,7 @@ private:
     bool isInEditMode() const;
 
     Ui::MainWindow *ui;
-    ChessboardScene *m_scene;
+    ChessboardScene *m_scene {};
 };
 
 #endif // MAINWINDOW_H

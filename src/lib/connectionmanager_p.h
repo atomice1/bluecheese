@@ -51,7 +51,7 @@ private:
     ConnectionManager *q_ptr;
     ConnectionFactory m_connectionFactory;
     Connection *m_connection {};
-    State m_state;
+    State m_state {Disconnected};
 };
 
 }

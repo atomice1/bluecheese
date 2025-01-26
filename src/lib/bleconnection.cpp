@@ -22,6 +22,7 @@
 #include <QLatin1String>
 #include <QLowEnergyController>
 #include <QtGlobal>
+#include <QTimer>
 
 #include "bleconnection.h"
 #include "chessboard.h"
@@ -93,6 +94,7 @@ void BleConnection::startDiscovery()
         qDebug("BleConnection::deviceDiscovered");
         if (info.address() == m_info.address()) {
             m_deviceDiscovered = true;
+            m_discoveryAgent->stop();
             QMetaObject::invokeMethod(this, [this]() {
                 m_central->connectToDevice();
             }, Qt::QueuedConnection);
@@ -123,6 +125,14 @@ void BleConnection::controllerErrorOccurred(QLowEnergyController::Error error)
         }, Qt::QueuedConnection);
         return;
     }
+#ifdef __linux__
+    if (error == QLowEnergyController::UnknownError && m_connectRetries++ < 5) {
+        QTimer::singleShot(250, this, [this]() {
+            m_central->connectToDevice();
+        });
+        return;
+    }
+#endif
     ConnectionManager::Error error2 = ConnectionManager::UnknownError;
     switch (error) {
     case QLowEnergyController::NoError:
